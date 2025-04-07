@@ -44,27 +44,29 @@
             lblHeading.FlatStyle = FlatStyle.Flat;
             lblHeading.Font = new Font("Arial Rounded MT Bold", 22.2F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lblHeading.ForeColor = SystemColors.ButtonHighlight;
-            lblHeading.Location = new Point(228, 43);
+            lblHeading.Location = new Point(200, 43);
             lblHeading.Name = "lblHeading";
-            lblHeading.Size = new Size(350, 43);
+            lblHeading.Size = new Size(348, 43);
             lblHeading.TabIndex = 0;
-            lblHeading.Text = "Welcome to VIbely";
+            lblHeading.Text = "Welcome to Vibely";
             lblHeading.TextAlign = ContentAlignment.TopCenter;
             // 
             // txtLoginUsername
             // 
             txtLoginUsername.BackColor = Color.DarkMagenta;
+            txtLoginUsername.Font = new Font("Arial Rounded MT Bold", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
             txtLoginUsername.ForeColor = SystemColors.ButtonHighlight;
-            txtLoginUsername.Location = new Point(296, 146);
+            txtLoginUsername.Location = new Point(288, 146);
             txtLoginUsername.Name = "txtLoginUsername";
-            txtLoginUsername.Size = new Size(173, 27);
+            txtLoginUsername.Size = new Size(173, 28);
             txtLoginUsername.TabIndex = 1;
             // 
             // txtLoginPassword
             // 
             txtLoginPassword.BackColor = Color.Purple;
+            txtLoginPassword.Font = new Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, 0);
             txtLoginPassword.ForeColor = SystemColors.ButtonHighlight;
-            txtLoginPassword.Location = new Point(296, 218);
+            txtLoginPassword.Location = new Point(288, 218);
             txtLoginPassword.Name = "txtLoginPassword";
             txtLoginPassword.Size = new Size(173, 27);
             txtLoginPassword.TabIndex = 2;
@@ -72,8 +74,9 @@
             // btnLogin
             // 
             btnLogin.BackColor = Color.Purple;
+            btnLogin.Font = new Font("Arial Rounded MT Bold", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
             btnLogin.ForeColor = SystemColors.ButtonHighlight;
-            btnLogin.Location = new Point(322, 274);
+            btnLogin.Location = new Point(311, 274);
             btnLogin.Name = "btnLogin";
             btnLogin.Size = new Size(117, 29);
             btnLogin.TabIndex = 3;
@@ -83,8 +86,9 @@
             // btnRegister
             // 
             btnRegister.BackColor = Color.Purple;
+            btnRegister.Font = new Font("Arial Rounded MT Bold", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
             btnRegister.ForeColor = SystemColors.ButtonHighlight;
-            btnRegister.Location = new Point(322, 346);
+            btnRegister.Location = new Point(311, 346);
             btnRegister.Name = "btnRegister";
             btnRegister.Size = new Size(117, 29);
             btnRegister.TabIndex = 4;
@@ -95,22 +99,22 @@
             // lblUsername
             // 
             lblUsername.AutoSize = true;
-            lblUsername.Font = new Font("Arial Rounded MT Bold", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            lblUsername.Font = new Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lblUsername.ForeColor = SystemColors.ButtonHighlight;
-            lblUsername.Location = new Point(296, 126);
+            lblUsername.Location = new Point(288, 123);
             lblUsername.Name = "lblUsername";
-            lblUsername.Size = new Size(83, 17);
+            lblUsername.Size = new Size(93, 20);
             lblUsername.TabIndex = 5;
             lblUsername.Text = "Username";
             // 
             // lblPassword
             // 
             lblPassword.AutoSize = true;
-            lblPassword.Font = new Font("Arial Rounded MT Bold", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            lblPassword.Font = new Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lblPassword.ForeColor = SystemColors.ButtonHighlight;
-            lblPassword.Location = new Point(296, 198);
+            lblPassword.Location = new Point(291, 195);
             lblPassword.Name = "lblPassword";
-            lblPassword.Size = new Size(80, 17);
+            lblPassword.Size = new Size(90, 20);
             lblPassword.TabIndex = 6;
             lblPassword.Text = "Password";
             // 
@@ -119,7 +123,7 @@
             lblNoAccount.AutoSize = true;
             lblNoAccount.Font = new Font("Arial Rounded MT Bold", 7.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lblNoAccount.ForeColor = SystemColors.ButtonFace;
-            lblNoAccount.Location = new Point(296, 328);
+            lblNoAccount.Location = new Point(291, 318);
             lblNoAccount.Name = "lblNoAccount";
             lblNoAccount.Size = new Size(157, 15);
             lblNoAccount.TabIndex = 7;

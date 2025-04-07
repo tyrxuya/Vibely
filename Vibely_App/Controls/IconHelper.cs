@@ -16,7 +16,7 @@ namespace Vibely_App.Controls
             {
                 Image = icon.ToBitmap(),
                 Size = new Size(20, 20),
-                Location = new Point(textBox.Left - 25, textBox.Top + (textBox.Height - 20) / 2), 
+                Location = new Point(textBox.Left - 25, (textBox.Top - 6) + (textBox.Height - 20) / 2), 
                 SizeMode = PictureBoxSizeMode.StretchImage
             };
 
