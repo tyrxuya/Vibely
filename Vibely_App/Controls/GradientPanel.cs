@@ -9,13 +9,13 @@ namespace Vibely_App.Controls
 {
     public class GradientPanel : Panel
     {
-        public Color TopColor { get; set; }
-        public Color BottomColor { get; set; }
+        public Color StartColor { get; set; }
+        public Color EndColor { get; set; }
         public float Angle { get; set; }
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            LinearGradientBrush brush = new LinearGradientBrush(ClientRectangle, TopColor, BottomColor, Angle);
+            LinearGradientBrush brush = new LinearGradientBrush(ClientRectangle, StartColor, EndColor, Angle);
             Graphics g = e.Graphics;
             g.FillRectangle(brush, ClientRectangle);
             base.OnPaint(e);
