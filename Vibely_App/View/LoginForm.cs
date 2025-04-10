@@ -20,6 +20,23 @@ namespace Vibely_App.View
         public LoginForm()
         {
             InitializeComponent();
+            InitializeControls();
+
+        }
+
+        private void btnRegister_Click(object sender, EventArgs e)
+        {
+            RegisterForm registerForm = new RegisterForm();
+            registerForm.Show();
+        }
+
+        private void LoginForm_Load(object sender, EventArgs e)
+        {
+        }
+
+        private void InitializeControls()
+        {
+            txtLoginPassword.PasswordChar = '*';
 
             //Background with gradient panel
             GradientPanel gradientPanel = new GradientPanel();
@@ -28,8 +45,6 @@ namespace Vibely_App.View
             gradientPanel.EndColor = Color.Black;
             gradientPanel.Angle = 45;
             this.Controls.Add(gradientPanel);
-
-            txtLoginPassword.PasswordChar = '*';
 
             //Setting the icons
             IconHelper.AddIconToTextBox(gradientPanel, txtLoginUsername, APIConstants.IconLogin);
@@ -44,7 +59,7 @@ namespace Vibely_App.View
             lblUsername.Parent = gradientPanel;
             lblPassword.Parent = gradientPanel;
             lblNoAccount.Parent = gradientPanel;
-            
+
             //Formatting borders
             txtLoginUsername.BorderStyle = BorderStyle.None;
             txtLoginPassword.BorderStyle = BorderStyle.None;
@@ -53,19 +68,8 @@ namespace Vibely_App.View
             btnRegister.FlatStyle = FlatStyle.Flat;
             btnRegister.FlatAppearance.BorderColor = Color.Black;
 
-
-
-
         }
 
-        private void btnRegister_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void LoginForm_Load(object sender, EventArgs e)
-        {
-        }
-
+       
     }
 }
