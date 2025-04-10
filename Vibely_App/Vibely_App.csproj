@@ -14,6 +14,7 @@
     <None Remove="Resources\logo.ico" />
     <None Remove="Resources\logo.png" />
     <None Remove="Resources\password.ico" />
+    <None Remove="Resources\VibelyLogo.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -46,8 +47,9 @@
   <ItemGroup>
     <Resource Include="Resources\login.ico" />
     <Resource Include="Resources\logo.ico" />
-    <Resource Include="Resources\logo.png" />
+    <EmbeddedResource Include="Resources\logo.png" />
     <Resource Include="Resources\password.ico" />
+    <Resource Include="Resources\VibelyLogo.ico" />
   </ItemGroup>
 
 </Project>

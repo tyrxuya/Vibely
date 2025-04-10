@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Vibely_App.Controls;
 
 namespace Vibely_App.View
 {
@@ -15,6 +16,16 @@ namespace Vibely_App.View
         public RegisterForm()
         {
             InitializeComponent();
+        }
+
+        private void RegisterForm_Load(object sender, EventArgs e)
+        {
+            GradientPanel gradientPanel = new GradientPanel();
+            gradientPanel.Dock = DockStyle.Fill;
+            gradientPanel.StartColor = Color.Purple;
+            gradientPanel.EndColor = Color.Black;
+            gradientPanel.Angle = 45;
+            this.Controls.Add(gradientPanel);
         }
     }
 }

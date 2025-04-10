@@ -1,4 +1,6 @@
-﻿namespace Vibely_App.View
+﻿using Vibely_App.Controls;
+
+namespace Vibely_App.View
 {
     partial class LoginForm
     {
@@ -28,6 +30,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LoginForm));
             lblHeading = new Label();
             txtLoginUsername = new TextBox();
             txtLoginPassword = new TextBox();
@@ -145,6 +148,7 @@
             Controls.Add(txtLoginUsername);
             Controls.Add(lblHeading);
             ForeColor = SystemColors.ActiveCaptionText;
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "LoginForm";
             Text = "Vibely";
             Load += LoginForm_Load;
@@ -153,6 +157,7 @@
         }
 
         #endregion
+
 
         private Label lblHeading;
         private TextBox txtLoginUsername;
