@@ -36,38 +36,16 @@ namespace Vibely_App.View
 
         private void InitializeControls()
         {
-            txtLoginPassword.PasswordChar = '*';
-
-            //Background with gradient panel
-            GradientPanel gradientPanel = new GradientPanel();
-            gradientPanel.Dock = DockStyle.Fill;
-            gradientPanel.StartColor = Color.Purple;
-            gradientPanel.EndColor = Color.Black;
-            gradientPanel.Angle = 45;
-            this.Controls.Add(gradientPanel);
-
-            //Setting the icons
-            IconHelper.AddIconToTextBox(gradientPanel, txtLoginUsername, APIConstants.IconLogin);
-            IconHelper.AddIconToTextBox(gradientPanel, txtLoginPassword, APIConstants.IconPassword);
-
-            //Setting the background of lables
-            lblHeading.BackColor = Color.Transparent;
-            lblUsername.BackColor = Color.Transparent;
-            lblPassword.BackColor = Color.Transparent;
-            lblNoAccount.BackColor = Color.Transparent;
-            lblHeading.Parent = gradientPanel;
-            lblUsername.Parent = gradientPanel;
-            lblPassword.Parent = gradientPanel;
-            lblNoAccount.Parent = gradientPanel;
-
-            //Formatting borders
-            txtLoginUsername.BorderStyle = BorderStyle.None;
-            txtLoginPassword.BorderStyle = BorderStyle.None;
-            btnLogin.FlatStyle = FlatStyle.Flat;
-            btnLogin.FlatAppearance.BorderColor = Color.Black;
-            btnRegister.FlatStyle = FlatStyle.Flat;
-            btnRegister.FlatAppearance.BorderColor = Color.Black;
-
+            gradientPanel1.Controls.Add(lblHeading);
+            gradientPanel1.Controls.Add(txtLoginUsername);
+            gradientPanel1.Controls.Add(txtLoginPassword);
+            gradientPanel1.Controls.Add(btnLogin);
+            gradientPanel1.Controls.Add(btnRegister);
+            gradientPanel1.Controls.Add(lblUsername);
+            gradientPanel1.Controls.Add(lblPassword);
+            gradientPanel1.Controls.Add(lblNoAccount);
+            IconHelper.AddIconToTextBox(gradientPanel1, txtLoginUsername, APIConstants.IconLogin);
+            IconHelper.AddIconToTextBox(gradientPanel1, txtLoginPassword, APIConstants.IconPassword);
         }
 
        
