@@ -30,10 +30,6 @@ namespace Vibely_App.View
             registerForm.Show();
         }
 
-        private void LoginForm_Load(object sender, EventArgs e)
-        {
-        }
-
         private void InitializeControls()
         {
             gradientPanel1.Controls.Add(lblHeading);
@@ -48,6 +44,9 @@ namespace Vibely_App.View
             IconHelper.AddIconToTextBox(gradientPanel1, txtLoginPassword, APIConstants.IconPassword);
         }
 
-       
+        private void btnLogin_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

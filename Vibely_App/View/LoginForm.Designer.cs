@@ -108,6 +108,7 @@ namespace Vibely_App.View
             btnLogin.TabIndex = 3;
             btnLogin.Text = "Login";
             btnLogin.UseVisualStyleBackColor = false;
+            btnLogin.Click += btnLogin_Click;
             // 
             // btnRegister
             // 
@@ -181,7 +182,6 @@ namespace Vibely_App.View
             Margin = new Padding(3, 2, 3, 2);
             Name = "LoginForm";
             Text = "Vibely";
-            Load += LoginForm_Load;
             gradientPanel1.ResumeLayout(false);
             gradientPanel1.PerformLayout();
             ResumeLayout(false);
