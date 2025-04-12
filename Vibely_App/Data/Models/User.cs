@@ -49,6 +49,10 @@ namespace Vibely_App.Data.Models
         public string PhoneNumber { get; set; }
 
         [Required]
+        [Column("profile_picture")]
+        public byte[] ProfilePicture { get; set; }
+
+        [Required]
         [Column("is_premium")]
         public bool IsPremium { get; set; }
 
