@@ -17,15 +17,5 @@ namespace Vibely_App.View
         {
             InitializeComponent();
         }
-
-        private void RegisterForm_Load(object sender, EventArgs e)
-        {
-            GradientPanel gradientPanel = new GradientPanel();
-            gradientPanel.Dock = DockStyle.Fill;
-            gradientPanel.StartColor = Color.Purple;
-            gradientPanel.EndColor = Color.Black;
-            gradientPanel.Angle = 45;
-            this.Controls.Add(gradientPanel);
-        }
     }
 }
