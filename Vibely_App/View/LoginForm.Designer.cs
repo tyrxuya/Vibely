@@ -30,18 +30,85 @@ namespace Vibely_App.View
         /// </summary>
         private void InitializeComponent()
         {
+           // GradientPanel gradientPanel1;
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LoginForm));
-            lblHeading = new Label();
-            gradientPanel1 = new GradientPanel();
-            txtLoginUsername = new TextBox();
-            txtLoginPassword = new TextBox();
-            btnLogin = new Button();
             btnRegister = new Button();
-            lblUsername = new Label();
-            lblPassword = new Label();
             lblNoAccount = new Label();
+            btnLogin = new Button();
+            lblPassword = new Label();
+            txtLoginPassword = new TextBox();
+            lblHeading = new Label();
+            txtLoginUsername = new TextBox();
+            lblUsername = new Label();
+            gradientPanel1 = new GradientPanel();
             gradientPanel1.SuspendLayout();
             SuspendLayout();
+            // 
+            // btnRegister
+            // 
+            btnRegister.BackColor = Color.Purple;
+            btnRegister.FlatAppearance.BorderColor = Color.Black;
+            btnRegister.FlatStyle = FlatStyle.Flat;
+            btnRegister.Font = new Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            btnRegister.ForeColor = SystemColors.ButtonHighlight;
+            btnRegister.Location = new Point(331, 350);
+            btnRegister.Name = "btnRegister";
+            btnRegister.Size = new Size(110, 30);
+            btnRegister.TabIndex = 4;
+            btnRegister.Text = "Register";
+            btnRegister.UseVisualStyleBackColor = false;
+            btnRegister.Click += btnRegister_Click;
+            // 
+            // lblNoAccount
+            // 
+            lblNoAccount.AutoSize = true;
+            lblNoAccount.BackColor = Color.Transparent;
+            lblNoAccount.Font = new Font("Arial Rounded MT Bold", 7.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            lblNoAccount.ForeColor = SystemColors.ButtonFace;
+            lblNoAccount.Location = new Point(313, 332);
+            lblNoAccount.Name = "lblNoAccount";
+            lblNoAccount.Size = new Size(157, 15);
+            lblNoAccount.TabIndex = 7;
+            lblNoAccount.Text = "Don't have an account?";
+            // 
+            // btnLogin
+            // 
+            btnLogin.BackColor = Color.Purple;
+            btnLogin.FlatAppearance.BorderColor = Color.Black;
+            btnLogin.FlatStyle = FlatStyle.Flat;
+            btnLogin.Font = new Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            btnLogin.ForeColor = SystemColors.ButtonHighlight;
+            btnLogin.Location = new Point(331, 299);
+            btnLogin.Name = "btnLogin";
+            btnLogin.Size = new Size(110, 30);
+            btnLogin.TabIndex = 3;
+            btnLogin.Text = "Login";
+            btnLogin.UseVisualStyleBackColor = false;
+            btnLogin.Click += btnLogin_Click;
+            // 
+            // lblPassword
+            // 
+            lblPassword.AutoSize = true;
+            lblPassword.BackColor = Color.Transparent;
+            lblPassword.Font = new Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            lblPassword.ForeColor = SystemColors.ButtonHighlight;
+            lblPassword.Location = new Point(296, 216);
+            lblPassword.Name = "lblPassword";
+            lblPassword.Size = new Size(90, 20);
+            lblPassword.TabIndex = 6;
+            lblPassword.Text = "Password";
+            // 
+            // txtLoginPassword
+            // 
+            txtLoginPassword.BackColor = Color.Purple;
+            txtLoginPassword.BorderStyle = BorderStyle.None;
+            txtLoginPassword.Font = new Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            txtLoginPassword.ForeColor = SystemColors.ButtonHighlight;
+            txtLoginPassword.Location = new Point(296, 239);
+            txtLoginPassword.Name = "txtLoginPassword";
+            txtLoginPassword.PasswordChar = '*';
+            txtLoginPassword.Size = new Size(174, 20);
+            txtLoginPassword.TabIndex = 2;
             // 
             // lblHeading
             // 
@@ -50,81 +117,23 @@ namespace Vibely_App.View
             lblHeading.FlatStyle = FlatStyle.Flat;
             lblHeading.Font = new Font("Arial Rounded MT Bold", 22.2F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lblHeading.ForeColor = SystemColors.ButtonHighlight;
-            lblHeading.Location = new Point(208, 31);
+            lblHeading.Location = new Point(226, 53);
             lblHeading.Name = "lblHeading";
-            lblHeading.Size = new Size(285, 34);
+            lblHeading.Size = new Size(348, 43);
             lblHeading.TabIndex = 0;
             lblHeading.Text = "Welcome to Vibely";
             lblHeading.TextAlign = ContentAlignment.TopCenter;
             // 
-            // gradientPanel1
-            // 
-            gradientPanel1.Angle = 45F;
-            gradientPanel1.Controls.Add(lblHeading);
-            gradientPanel1.Dock = DockStyle.Top;
-            gradientPanel1.EndColor = Color.Black;
-            gradientPanel1.Location = new Point(0, 0);
-            gradientPanel1.Name = "gradientPanel1";
-            gradientPanel1.Size = new Size(700, 338);
-            gradientPanel1.StartColor = Color.Purple;
-            gradientPanel1.TabIndex = 0;
-            // 
             // txtLoginUsername
             // 
-            txtLoginUsername.BackColor = Color.DarkMagenta;
+            txtLoginUsername.BackColor = Color.Purple;
             txtLoginUsername.BorderStyle = BorderStyle.None;
             txtLoginUsername.Font = new Font("Arial Rounded MT Bold", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
             txtLoginUsername.ForeColor = SystemColors.ButtonHighlight;
-            txtLoginUsername.Location = new Point(272, 110);
-            txtLoginUsername.Margin = new Padding(3, 2, 3, 2);
+            txtLoginUsername.Location = new Point(296, 168);
             txtLoginUsername.Name = "txtLoginUsername";
-            txtLoginUsername.Size = new Size(152, 17);
+            txtLoginUsername.Size = new Size(174, 21);
             txtLoginUsername.TabIndex = 1;
-            // 
-            // txtLoginPassword
-            // 
-            txtLoginPassword.BackColor = Color.Purple;
-            txtLoginPassword.BorderStyle = BorderStyle.None;
-            txtLoginPassword.Font = new Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            txtLoginPassword.ForeColor = SystemColors.ButtonHighlight;
-            txtLoginPassword.Location = new Point(272, 164);
-            txtLoginPassword.Margin = new Padding(3, 2, 3, 2);
-            txtLoginPassword.Name = "txtLoginPassword";
-            txtLoginPassword.PasswordChar = '*';
-            txtLoginPassword.Size = new Size(152, 16);
-            txtLoginPassword.TabIndex = 2;
-            // 
-            // btnLogin
-            // 
-            btnLogin.BackColor = Color.Purple;
-            btnLogin.FlatAppearance.BorderColor = Color.Black;
-            btnLogin.FlatStyle = FlatStyle.Flat;
-            btnLogin.Font = new Font("Arial Rounded MT Bold", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            btnLogin.ForeColor = SystemColors.ButtonHighlight;
-            btnLogin.Location = new Point(292, 206);
-            btnLogin.Margin = new Padding(3, 2, 3, 2);
-            btnLogin.Name = "btnLogin";
-            btnLogin.Size = new Size(102, 26);
-            btnLogin.TabIndex = 3;
-            btnLogin.Text = "Login";
-            btnLogin.UseVisualStyleBackColor = false;
-            btnLogin.Click += btnLogin_Click;
-            // 
-            // btnRegister
-            // 
-            btnRegister.BackColor = Color.Purple;
-            btnRegister.FlatAppearance.BorderColor = Color.Black;
-            btnRegister.FlatStyle = FlatStyle.Flat;
-            btnRegister.Font = new Font("Arial Rounded MT Bold", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            btnRegister.ForeColor = SystemColors.ButtonHighlight;
-            btnRegister.Location = new Point(292, 260);
-            btnRegister.Margin = new Padding(3, 2, 3, 2);
-            btnRegister.Name = "btnRegister";
-            btnRegister.Size = new Size(102, 26);
-            btnRegister.TabIndex = 4;
-            btnRegister.Text = "Register";
-            btnRegister.UseVisualStyleBackColor = false;
-            btnRegister.Click += btnRegister_Click;
             // 
             // lblUsername
             // 
@@ -132,73 +141,60 @@ namespace Vibely_App.View
             lblUsername.BackColor = Color.Transparent;
             lblUsername.Font = new Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lblUsername.ForeColor = SystemColors.ButtonHighlight;
-            lblUsername.Location = new Point(272, 92);
+            lblUsername.Location = new Point(296, 145);
             lblUsername.Name = "lblUsername";
-            lblUsername.Size = new Size(76, 16);
+            lblUsername.Size = new Size(93, 20);
             lblUsername.TabIndex = 5;
             lblUsername.Text = "Username";
             // 
-            // lblPassword
+            // gradientPanel1
             // 
-            lblPassword.AutoSize = true;
-            lblPassword.BackColor = Color.Transparent;
-            lblPassword.Font = new Font("Arial Rounded MT Bold", 10.2F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblPassword.ForeColor = SystemColors.ButtonHighlight;
-            lblPassword.Location = new Point(275, 146);
-            lblPassword.Name = "lblPassword";
-            lblPassword.Size = new Size(74, 16);
-            lblPassword.TabIndex = 6;
-            lblPassword.Text = "Password";
-            // 
-            // lblNoAccount
-            // 
-            lblNoAccount.AutoSize = true;
-            lblNoAccount.BackColor = Color.Transparent;
-            lblNoAccount.Font = new Font("Arial Rounded MT Bold", 7.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblNoAccount.ForeColor = SystemColors.ButtonFace;
-            lblNoAccount.Location = new Point(275, 242);
-            lblNoAccount.Name = "lblNoAccount";
-            lblNoAccount.Size = new Size(136, 12);
-            lblNoAccount.TabIndex = 7;
-            lblNoAccount.Text = "Don't have an account?";
+            gradientPanel1.Angle = 45F;
+            gradientPanel1.Controls.Add(btnRegister);
+            gradientPanel1.Controls.Add(lblNoAccount);
+            gradientPanel1.Controls.Add(btnLogin);
+            gradientPanel1.Controls.Add(lblPassword);
+            gradientPanel1.Controls.Add(txtLoginPassword);
+            gradientPanel1.Controls.Add(lblHeading);
+            gradientPanel1.Controls.Add(txtLoginUsername);
+            gradientPanel1.Controls.Add(lblUsername);
+            gradientPanel1.Dock = DockStyle.Top;
+            gradientPanel1.EndColor = Color.FromArgb(0, 0, 64);
+            gradientPanel1.Location = new Point(0, 0);
+            gradientPanel1.Margin = new Padding(3, 4, 3, 4);
+            gradientPanel1.Name = "gradientPanel1";
+            gradientPanel1.Size = new Size(800, 451);
+            gradientPanel1.StartColor = Color.FromArgb(64, 0, 64);
+            gradientPanel1.TabIndex = 0;
+            gradientPanel1.Paint += gradientPanel1_Paint;
             // 
             // LoginForm
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
             BackColor = Color.MediumOrchid;
-            ClientSize = new Size(700, 338);
+            ClientSize = new Size(800, 451);
             Controls.Add(gradientPanel1);
-            Controls.Add(lblNoAccount);
-            Controls.Add(lblPassword);
-            Controls.Add(lblUsername);
-            Controls.Add(btnRegister);
-            Controls.Add(btnLogin);
-            Controls.Add(txtLoginPassword);
-            Controls.Add(txtLoginUsername);
             ForeColor = SystemColors.ActiveCaptionText;
             Icon = (Icon)resources.GetObject("$this.Icon");
-            Margin = new Padding(3, 2, 3, 2);
             Name = "LoginForm";
             Text = "Vibely";
             gradientPanel1.ResumeLayout(false);
             gradientPanel1.PerformLayout();
             ResumeLayout(false);
-            PerformLayout();
         }
 
         #endregion
 
-
+        private GradientPanel gradientPanel1;
+        private Button btnRegister;
+        private Label lblNoAccount;
+        private Button btnLogin;
+        private Label lblPassword;
+        private TextBox txtLoginPassword;
         private Label lblHeading;
         private TextBox txtLoginUsername;
-        private TextBox txtLoginPassword;
-        private Button btnLogin;
-        private Button btnRegister;
         private Label lblUsername;
-        private Label lblPassword;
-        private Label lblNoAccount;
-        private GradientPanel gradientPanel1;
     }
 }
