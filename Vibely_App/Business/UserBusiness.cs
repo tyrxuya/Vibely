@@ -71,5 +71,14 @@ namespace Vibely_App.Business
                 _dbContext.SaveChanges();
             }
         }
+
+        User? IUserBusiness.FindByCredentials(string username, string password)
+        {
+            IPasswordHasher passwordHasher = new PasswordHasher();
+            password = passwordHasher.Hash(password);
+
+            return _dbContext.Users.Where(u => u.Username == username && u.Password == password)
+                .FirstOrDefault();
+        }
     }
 }
