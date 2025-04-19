@@ -208,6 +208,7 @@ namespace Vibely_App.View
             btnRegisterRegister.TabIndex = 12;
             btnRegisterRegister.Text = "Register";
             btnRegisterRegister.UseVisualStyleBackColor = false;
+            btnRegisterRegister.Click += btnRegisterRegister_Click;
             // 
             // lblRegisterTitle
             // 

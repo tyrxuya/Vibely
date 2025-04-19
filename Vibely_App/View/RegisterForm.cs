@@ -47,5 +47,12 @@ namespace Vibely_App.View
                 }
             }
         }
+
+        private void btnRegisterRegister_Click(object sender, EventArgs e)
+        {
+            //Register logic
+            new LoginForm().Show();
+            this.Hide();
+        }
     }
 }
