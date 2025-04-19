@@ -71,5 +71,10 @@ namespace Vibely_App.Business
                 _dbContext.SaveChanges();
             }
         }
+
+        public bool IsUsernameTaken(string username)
+        {
+            return _dbContext.Users.Any(u => u.Username == username);
+        }
     }
 }
