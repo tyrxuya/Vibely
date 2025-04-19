@@ -85,6 +85,7 @@ namespace Vibely_App.View
             btnLogin.TabIndex = 3;
             btnLogin.Text = "Login";
             btnLogin.UseVisualStyleBackColor = false;
+            btnLogin.Click += btnLogin_Click;
             // 
             // lblPassword
             // 

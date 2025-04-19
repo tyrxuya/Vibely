@@ -43,5 +43,11 @@ namespace Vibely_App.View
             IconHelper.AddIconToControl(gradientPanel1, txtLoginUsername, APIConstants.IconLogin);
             IconHelper.AddIconToControl(gradientPanel1, txtLoginPassword, APIConstants.IconPassword);
         }
+
+        private void btnLogin_Click(object sender, EventArgs e)
+        {
+            new MainApp().Show();
+            this.Hide();
+        }
     }
 }
