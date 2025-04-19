@@ -10,13 +10,13 @@ namespace Vibely_App.Controls
 {
     internal class IconHelper
     {
-        public static void AddIconToTextBox(Panel panel, TextBox textBox, Icon icon)
+        public static void AddIconToControl(Panel panel, Control control, Icon icon)
         {
             PictureBox pictureBox = new PictureBox
             {
                 Image = icon.ToBitmap(),
                 Size = new Size(20, 20),
-                Location = new Point(textBox.Left - 25, (textBox.Top - 2) + (textBox.Height - 20) / 2), 
+                Location = new Point(control.Left - 25, (control.Top - 2) + (control.Height - 20) / 2), 
                 SizeMode = PictureBoxSizeMode.StretchImage
             };
 

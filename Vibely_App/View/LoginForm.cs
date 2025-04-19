@@ -26,8 +26,8 @@ namespace Vibely_App.View
 
         private void btnRegister_Click(object sender, EventArgs e)
         {
-            RegisterForm registerForm = new RegisterForm();
-            registerForm.Show();
+            new RegisterForm().Show();
+            this.Hide();
         }
 
         private void InitializeControls()
@@ -40,13 +40,8 @@ namespace Vibely_App.View
             gradientPanel1.Controls.Add(lblUsername);
             gradientPanel1.Controls.Add(lblPassword);
             gradientPanel1.Controls.Add(lblNoAccount);
-            IconHelper.AddIconToTextBox(gradientPanel1, txtLoginUsername, APIConstants.IconLogin);
-            IconHelper.AddIconToTextBox(gradientPanel1, txtLoginPassword, APIConstants.IconPassword);
-        }
-
-        private void btnLogin_Click(object sender, EventArgs e)
-        {
-
+            IconHelper.AddIconToControl(gradientPanel1, txtLoginUsername, APIConstants.IconLogin);
+            IconHelper.AddIconToControl(gradientPanel1, txtLoginPassword, APIConstants.IconPassword);
         }
     }
 }
