@@ -80,5 +80,10 @@ namespace Vibely_App.Business
             return _dbContext.Users.Where(u => u.Username == username && u.Password == password)
                 .FirstOrDefault();
         }
+
+        public bool IsUsernameTaken(string username)
+        {
+            return _dbContext.Users.Any(u => u.Username == username);
+        }
     }
 }
