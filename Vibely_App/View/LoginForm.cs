@@ -26,8 +26,8 @@ namespace Vibely_App.View
 
         private void btnRegister_Click(object sender, EventArgs e)
         {
-            RegisterForm registerForm = new RegisterForm();
-            registerForm.Show();
+            new RegisterForm().Show();
+            this.Hide();
         }
 
         private void InitializeControls()

@@ -30,6 +30,7 @@ namespace Vibely_App.View
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(RegisterForm));
             txtRegisterUsername = new TextBox();
             txtRegisterNames = new TextBox();
             txtRegisterPassword = new TextBox();
@@ -54,10 +55,10 @@ namespace Vibely_App.View
             txtRegisterUsername.BorderStyle = BorderStyle.None;
             txtRegisterUsername.Font = new Font("Arial Rounded MT Bold", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
             txtRegisterUsername.ForeColor = SystemColors.ButtonHighlight;
-            txtRegisterUsername.Location = new Point(136, 141);
-            txtRegisterUsername.Margin = new Padding(3, 4, 3, 3);
+            txtRegisterUsername.Location = new Point(119, 106);
+            txtRegisterUsername.Margin = new Padding(3, 3, 3, 2);
             txtRegisterUsername.Name = "txtRegisterUsername";
-            txtRegisterUsername.Size = new Size(222, 21);
+            txtRegisterUsername.Size = new Size(194, 17);
             txtRegisterUsername.TabIndex = 0;
             // 
             // txtRegisterNames
@@ -66,10 +67,9 @@ namespace Vibely_App.View
             txtRegisterNames.BorderStyle = BorderStyle.None;
             txtRegisterNames.Font = new Font("Arial Rounded MT Bold", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
             txtRegisterNames.ForeColor = SystemColors.ButtonHighlight;
-            txtRegisterNames.Location = new Point(443, 141);
-            txtRegisterNames.Margin = new Padding(3, 4, 3, 4);
+            txtRegisterNames.Location = new Point(388, 106);
             txtRegisterNames.Name = "txtRegisterNames";
-            txtRegisterNames.Size = new Size(222, 21);
+            txtRegisterNames.Size = new Size(194, 17);
             txtRegisterNames.TabIndex = 1;
             // 
             // txtRegisterPassword
@@ -78,10 +78,9 @@ namespace Vibely_App.View
             txtRegisterPassword.BorderStyle = BorderStyle.None;
             txtRegisterPassword.Font = new Font("Arial Rounded MT Bold", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
             txtRegisterPassword.ForeColor = SystemColors.ButtonHighlight;
-            txtRegisterPassword.Location = new Point(136, 233);
-            txtRegisterPassword.Margin = new Padding(3, 4, 3, 4);
+            txtRegisterPassword.Location = new Point(119, 175);
             txtRegisterPassword.Name = "txtRegisterPassword";
-            txtRegisterPassword.Size = new Size(222, 21);
+            txtRegisterPassword.Size = new Size(194, 17);
             txtRegisterPassword.TabIndex = 2;
             txtRegisterPassword.UseSystemPasswordChar = true;
             // 
@@ -91,10 +90,9 @@ namespace Vibely_App.View
             txtRegisterPhoneNumber.BorderStyle = BorderStyle.None;
             txtRegisterPhoneNumber.Font = new Font("Arial Rounded MT Bold", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
             txtRegisterPhoneNumber.ForeColor = SystemColors.ButtonHighlight;
-            txtRegisterPhoneNumber.Location = new Point(443, 233);
-            txtRegisterPhoneNumber.Margin = new Padding(3, 4, 3, 4);
+            txtRegisterPhoneNumber.Location = new Point(388, 175);
             txtRegisterPhoneNumber.Name = "txtRegisterPhoneNumber";
-            txtRegisterPhoneNumber.Size = new Size(222, 21);
+            txtRegisterPhoneNumber.Size = new Size(194, 17);
             txtRegisterPhoneNumber.TabIndex = 3;
             // 
             // txtRegisterEmail
@@ -102,10 +100,9 @@ namespace Vibely_App.View
             txtRegisterEmail.BackColor = Color.Purple;
             txtRegisterEmail.BorderStyle = BorderStyle.None;
             txtRegisterEmail.Font = new Font("Arial Rounded MT Bold", 10.2F);
-            txtRegisterEmail.Location = new Point(443, 313);
-            txtRegisterEmail.Margin = new Padding(3, 4, 3, 4);
+            txtRegisterEmail.Location = new Point(388, 235);
             txtRegisterEmail.Name = "txtRegisterEmail";
-            txtRegisterEmail.Size = new Size(222, 20);
+            txtRegisterEmail.Size = new Size(194, 16);
             txtRegisterEmail.TabIndex = 4;
             // 
             // lblRegisterUsername
@@ -114,9 +111,9 @@ namespace Vibely_App.View
             lblRegisterUsername.BackColor = Color.Transparent;
             lblRegisterUsername.Font = new Font("Arial Rounded MT Bold", 10.2F);
             lblRegisterUsername.ForeColor = SystemColors.ButtonHighlight;
-            lblRegisterUsername.Location = new Point(136, 117);
+            lblRegisterUsername.Location = new Point(116, 88);
             lblRegisterUsername.Name = "lblRegisterUsername";
-            lblRegisterUsername.Size = new Size(93, 20);
+            lblRegisterUsername.Size = new Size(76, 16);
             lblRegisterUsername.TabIndex = 5;
             lblRegisterUsername.Text = "Username";
             // 
@@ -126,9 +123,9 @@ namespace Vibely_App.View
             lblRegisterPassword.BackColor = Color.Transparent;
             lblRegisterPassword.Font = new Font("Arial Rounded MT Bold", 10.2F);
             lblRegisterPassword.ForeColor = SystemColors.ButtonHighlight;
-            lblRegisterPassword.Location = new Point(136, 209);
+            lblRegisterPassword.Location = new Point(116, 157);
             lblRegisterPassword.Name = "lblRegisterPassword";
-            lblRegisterPassword.Size = new Size(90, 20);
+            lblRegisterPassword.Size = new Size(74, 16);
             lblRegisterPassword.TabIndex = 6;
             lblRegisterPassword.Text = "Password";
             // 
@@ -138,9 +135,9 @@ namespace Vibely_App.View
             lblRegisterNames.BackColor = Color.Transparent;
             lblRegisterNames.Font = new Font("Arial Rounded MT Bold", 10.2F);
             lblRegisterNames.ForeColor = SystemColors.ButtonHighlight;
-            lblRegisterNames.Location = new Point(443, 117);
+            lblRegisterNames.Location = new Point(385, 88);
             lblRegisterNames.Name = "lblRegisterNames";
-            lblRegisterNames.Size = new Size(164, 20);
+            lblRegisterNames.Size = new Size(136, 16);
             lblRegisterNames.TabIndex = 7;
             lblRegisterNames.Text = "First and last name";
             // 
@@ -150,9 +147,9 @@ namespace Vibely_App.View
             lblRegisterPhoneNumber.BackColor = Color.Transparent;
             lblRegisterPhoneNumber.Font = new Font("Arial Rounded MT Bold", 10.2F);
             lblRegisterPhoneNumber.ForeColor = SystemColors.ButtonHighlight;
-            lblRegisterPhoneNumber.Location = new Point(443, 209);
+            lblRegisterPhoneNumber.Location = new Point(385, 157);
             lblRegisterPhoneNumber.Name = "lblRegisterPhoneNumber";
-            lblRegisterPhoneNumber.Size = new Size(127, 20);
+            lblRegisterPhoneNumber.Size = new Size(103, 16);
             lblRegisterPhoneNumber.TabIndex = 8;
             lblRegisterPhoneNumber.Text = "Phone number";
             // 
@@ -162,9 +159,9 @@ namespace Vibely_App.View
             lblRegisterEmail.BackColor = Color.Transparent;
             lblRegisterEmail.Font = new Font("Arial Rounded MT Bold", 10.2F);
             lblRegisterEmail.ForeColor = SystemColors.ButtonHighlight;
-            lblRegisterEmail.Location = new Point(443, 289);
+            lblRegisterEmail.Location = new Point(385, 217);
             lblRegisterEmail.Name = "lblRegisterEmail";
-            lblRegisterEmail.Size = new Size(61, 20);
+            lblRegisterEmail.Size = new Size(49, 16);
             lblRegisterEmail.TabIndex = 9;
             lblRegisterEmail.Text = "E-mail";
             // 
@@ -174,9 +171,9 @@ namespace Vibely_App.View
             lblRegisterProfilePicture.BackColor = Color.Transparent;
             lblRegisterProfilePicture.Font = new Font("Arial Rounded MT Bold", 10.2F);
             lblRegisterProfilePicture.ForeColor = SystemColors.ButtonHighlight;
-            lblRegisterProfilePicture.Location = new Point(159, 289);
+            lblRegisterProfilePicture.Location = new Point(139, 217);
             lblRegisterProfilePicture.Name = "lblRegisterProfilePicture";
-            lblRegisterProfilePicture.Size = new Size(131, 20);
+            lblRegisterProfilePicture.Size = new Size(107, 16);
             lblRegisterProfilePicture.TabIndex = 10;
             lblRegisterProfilePicture.Text = "Profile picture:";
             // 
@@ -187,10 +184,9 @@ namespace Vibely_App.View
             btnRegisterUpload.FlatStyle = FlatStyle.Flat;
             btnRegisterUpload.Font = new Font("Arial Rounded MT Bold", 10.2F);
             btnRegisterUpload.ForeColor = SystemColors.ButtonHighlight;
-            btnRegisterUpload.Location = new Point(159, 313);
-            btnRegisterUpload.Margin = new Padding(3, 4, 3, 4);
+            btnRegisterUpload.Location = new Point(139, 235);
             btnRegisterUpload.Name = "btnRegisterUpload";
-            btnRegisterUpload.Size = new Size(131, 29);
+            btnRegisterUpload.Size = new Size(115, 26);
             btnRegisterUpload.TabIndex = 11;
             btnRegisterUpload.Text = "Upload";
             btnRegisterUpload.UseVisualStyleBackColor = false;
@@ -202,10 +198,9 @@ namespace Vibely_App.View
             btnRegisterRegister.FlatStyle = FlatStyle.Flat;
             btnRegisterRegister.Font = new Font("Arial Rounded MT Bold", 10.2F);
             btnRegisterRegister.ForeColor = SystemColors.ButtonHighlight;
-            btnRegisterRegister.Location = new Point(335, 376);
-            btnRegisterRegister.Margin = new Padding(3, 4, 3, 4);
+            btnRegisterRegister.Location = new Point(293, 282);
             btnRegisterRegister.Name = "btnRegisterRegister";
-            btnRegisterRegister.Size = new Size(131, 32);
+            btnRegisterRegister.Size = new Size(115, 26);
             btnRegisterRegister.TabIndex = 12;
             btnRegisterRegister.Text = "Register";
             btnRegisterRegister.UseVisualStyleBackColor = false;
@@ -216,9 +211,9 @@ namespace Vibely_App.View
             lblRegisterTitle.BackColor = Color.Transparent;
             lblRegisterTitle.Font = new Font("Arial Rounded MT Bold", 22.2F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lblRegisterTitle.ForeColor = SystemColors.ButtonHighlight;
-            lblRegisterTitle.Location = new Point(314, 39);
+            lblRegisterTitle.Location = new Point(275, 29);
             lblRegisterTitle.Name = "lblRegisterTitle";
-            lblRegisterTitle.Size = new Size(172, 43);
+            lblRegisterTitle.Size = new Size(140, 34);
             lblRegisterTitle.TabIndex = 13;
             lblRegisterTitle.Text = "Register";
             // 
@@ -241,21 +236,22 @@ namespace Vibely_App.View
             gradientPanel1.Controls.Add(txtRegisterPassword);
             gradientPanel1.EndColor = Color.FromArgb(0, 0, 64);
             gradientPanel1.Location = new Point(0, 0);
+            gradientPanel1.Margin = new Padding(3, 2, 3, 2);
             gradientPanel1.Name = "gradientPanel1";
-            gradientPanel1.Size = new Size(801, 451);
+            gradientPanel1.Size = new Size(701, 338);
             gradientPanel1.StartColor = Color.FromArgb(64, 0, 64);
             gradientPanel1.TabIndex = 14;
             // 
             // RegisterForm
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.ButtonShadow;
-            ClientSize = new Size(800, 451);
+            ClientSize = new Size(700, 338);
             Controls.Add(gradientPanel1);
-            Margin = new Padding(3, 4, 3, 4);
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "RegisterForm";
-            Text = "RegisterForm";
+            Text = "Vibely";
             TopMost = true;
             Load += RegisterForm_Load;
             gradientPanel1.ResumeLayout(false);
