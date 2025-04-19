@@ -30,6 +30,7 @@ namespace Vibely_App.View
         /// </summary>
         private void InitializeComponent()
         {
+            GradientPanel gradientPanel1;
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LoginForm));
             btnRegister = new Button();
             lblNoAccount = new Label();
@@ -85,6 +86,7 @@ namespace Vibely_App.View
             btnLogin.TabIndex = 3;
             btnLogin.Text = "Login";
             btnLogin.UseVisualStyleBackColor = false;
+            btnLogin.Click += btnLogin_Click;
             // 
             // lblPassword
             // 
