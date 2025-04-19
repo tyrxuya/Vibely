@@ -40,24 +40,8 @@ namespace Vibely_App.View
             gradientPanel1.Controls.Add(lblUsername);
             gradientPanel1.Controls.Add(lblPassword);
             gradientPanel1.Controls.Add(lblNoAccount);
-            IconHelper.AddIconToTextBox(gradientPanel1, txtLoginUsername, APIConstants.IconLogin);
-            IconHelper.AddIconToTextBox(gradientPanel1, txtLoginPassword, APIConstants.IconPassword);
+            IconHelper.AddIconToControl(gradientPanel1, txtLoginUsername, APIConstants.IconLogin);
+            IconHelper.AddIconToControl(gradientPanel1, txtLoginPassword, APIConstants.IconPassword);
         }
-
-        private void btnLogin_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void gradientPanel1_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void pictureBox1_Click(object sender, EventArgs e)
-        {
-
-        }
-
     }
 }

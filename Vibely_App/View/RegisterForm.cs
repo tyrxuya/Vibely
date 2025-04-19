@@ -31,14 +31,21 @@ namespace Vibely_App.View
             gradientPanel1.Controls.Add(lblRegisterEmail);
         }
 
-        private void RegisterForm_Load(object sender, EventArgs e)
+        private void btnRegisterUpload_Click(object sender, EventArgs e)
         {
-            
-        }
-
-        private void panelCenter_Paint(object sender, PaintEventArgs e)
-        {
-
+            if (fileDlg.ShowDialog() == DialogResult.OK)
+            {
+                string filePath = fileDlg.FileName;
+                if (filePath.EndsWith(".jpg") || filePath.EndsWith(".png") || filePath.EndsWith(".jpeg"))
+                {
+                    // Load the image into the PictureBox
+                    pictureBox1.Image = Image.FromFile(filePath);
+                }
+                else
+                {
+                    MessageBox.Show("Please select a valid image file (jpg, png, jpeg).");
+                }
+            }
         }
     }
 }

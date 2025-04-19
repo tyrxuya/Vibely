@@ -46,7 +46,10 @@ namespace Vibely_App.View
             btnRegisterRegister = new Button();
             lblRegisterTitle = new Label();
             gradientPanel1 = new GradientPanel();
+            pictureBox1 = new PictureBox();
+            fileDlg = new OpenFileDialog();
             gradientPanel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
             // 
             // txtRegisterUsername
@@ -171,7 +174,7 @@ namespace Vibely_App.View
             lblRegisterProfilePicture.BackColor = Color.Transparent;
             lblRegisterProfilePicture.Font = new Font("Arial Rounded MT Bold", 10.2F);
             lblRegisterProfilePicture.ForeColor = SystemColors.ButtonHighlight;
-            lblRegisterProfilePicture.Location = new Point(139, 217);
+            lblRegisterProfilePicture.Location = new Point(130, 217);
             lblRegisterProfilePicture.Name = "lblRegisterProfilePicture";
             lblRegisterProfilePicture.Size = new Size(107, 16);
             lblRegisterProfilePicture.TabIndex = 10;
@@ -184,12 +187,13 @@ namespace Vibely_App.View
             btnRegisterUpload.FlatStyle = FlatStyle.Flat;
             btnRegisterUpload.Font = new Font("Arial Rounded MT Bold", 10.2F);
             btnRegisterUpload.ForeColor = SystemColors.ButtonHighlight;
-            btnRegisterUpload.Location = new Point(139, 235);
+            btnRegisterUpload.Location = new Point(130, 235);
             btnRegisterUpload.Name = "btnRegisterUpload";
             btnRegisterUpload.Size = new Size(115, 26);
             btnRegisterUpload.TabIndex = 11;
             btnRegisterUpload.Text = "Upload";
             btnRegisterUpload.UseVisualStyleBackColor = false;
+            btnRegisterUpload.Click += btnRegisterUpload_Click;
             // 
             // btnRegisterRegister
             // 
@@ -220,6 +224,8 @@ namespace Vibely_App.View
             // gradientPanel1
             // 
             gradientPanel1.Angle = 45F;
+            gradientPanel1.BackColor = Color.Transparent;
+            gradientPanel1.Controls.Add(pictureBox1);
             gradientPanel1.Controls.Add(btnRegisterRegister);
             gradientPanel1.Controls.Add(lblRegisterEmail);
             gradientPanel1.Controls.Add(lblRegisterPhoneNumber);
@@ -242,6 +248,19 @@ namespace Vibely_App.View
             gradientPanel1.StartColor = Color.FromArgb(64, 0, 64);
             gradientPanel1.TabIndex = 14;
             // 
+            // pictureBox1
+            // 
+            pictureBox1.Location = new Point(251, 208);
+            pictureBox1.Name = "pictureBox1";
+            pictureBox1.Size = new Size(53, 53);
+            pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
+            pictureBox1.TabIndex = 14;
+            pictureBox1.TabStop = false;
+            // 
+            // fileDlg
+            // 
+            fileDlg.FileName = "fileDlg";
+            // 
             // RegisterForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -253,9 +272,9 @@ namespace Vibely_App.View
             Name = "RegisterForm";
             Text = "Vibely";
             TopMost = true;
-            Load += RegisterForm_Load;
             gradientPanel1.ResumeLayout(false);
             gradientPanel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ResumeLayout(false);
         }
 
@@ -276,5 +295,7 @@ namespace Vibely_App.View
         private Button btnRegisterRegister;
         private Label lblRegisterTitle;
         private GradientPanel gradientPanel1;
+        private OpenFileDialog fileDlg;
+        private PictureBox pictureBox1;
     }
 }
