@@ -64,7 +64,16 @@ namespace Vibely_App.View
                 return;
             }
 
-            //Send user to main form when implemented
+            new MainApp(user).Show();
+            this.Hide();
+        }
+
+        private void LoginForm_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                btnLogin_Click(sender, e);
+            }
         }
     }
 }
