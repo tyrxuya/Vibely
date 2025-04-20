@@ -30,6 +30,7 @@ namespace Vibely_App.View
         /// </summary>
         private void InitializeComponent()
         {
+            GradientPanel gradientPanel1;
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LoginForm));
             btnRegister = new Button();
             lblNoAccount = new Label();
