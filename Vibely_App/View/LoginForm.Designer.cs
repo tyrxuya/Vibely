@@ -111,6 +111,7 @@ namespace Vibely_App.View
             txtLoginPassword.PasswordChar = '*';
             txtLoginPassword.Size = new Size(152, 16);
             txtLoginPassword.TabIndex = 2;
+            txtLoginPassword.KeyDown += LoginForm_KeyDown;
             // 
             // lblHeading
             // 
@@ -137,6 +138,7 @@ namespace Vibely_App.View
             txtLoginUsername.Name = "txtLoginUsername";
             txtLoginUsername.Size = new Size(152, 17);
             txtLoginUsername.TabIndex = 1;
+            txtLoginUsername.KeyDown += LoginForm_KeyDown;
             // 
             // lblUsername
             // 
@@ -182,6 +184,7 @@ namespace Vibely_App.View
             Margin = new Padding(3, 2, 3, 2);
             Name = "LoginForm";
             Text = "Vibely";
+            KeyDown += LoginForm_KeyDown;
             gradientPanel1.ResumeLayout(false);
             gradientPanel1.PerformLayout();
             ResumeLayout(false);
