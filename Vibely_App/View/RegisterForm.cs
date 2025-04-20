@@ -69,6 +69,20 @@ namespace Vibely_App.View
                 return;
             }
 
+            if (!txtRegisterEmail.Text.Contains("@") || !txtRegisterEmail.Text.Contains("."))
+            {
+                MessageBox.Show("Please enter a valid email address.");
+                ClearFields();
+                return;
+            }
+
+            if (txtRegisterPhoneNumber.Text.Length != 10)
+            {
+                MessageBox.Show("Please enter a valid phone number (10 digits).");
+                ClearFields();
+                return;
+            }
+
             string username = txtRegisterUsername.Text;
             string password = PasswordHasher.Hash(txtRegisterPassword.Text);
             string firstName = txtRegisterNames.Text.Split(" ").First();
