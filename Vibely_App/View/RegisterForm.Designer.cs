@@ -46,10 +46,10 @@ namespace Vibely_App.View
             btnRegisterRegister = new Button();
             lblRegisterTitle = new Label();
             gradientPanel1 = new GradientPanel();
-            pictureBox1 = new PictureBox();
+            pctrUser = new PictureBox();
             fileDlg = new OpenFileDialog();
             gradientPanel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pctrUser).BeginInit();
             SuspendLayout();
             // 
             // txtRegisterUsername
@@ -103,6 +103,7 @@ namespace Vibely_App.View
             txtRegisterEmail.BackColor = Color.Purple;
             txtRegisterEmail.BorderStyle = BorderStyle.None;
             txtRegisterEmail.Font = new Font("Arial Rounded MT Bold", 10.2F);
+            txtRegisterEmail.ForeColor = SystemColors.ButtonHighlight;
             txtRegisterEmail.Location = new Point(388, 235);
             txtRegisterEmail.Name = "txtRegisterEmail";
             txtRegisterEmail.Size = new Size(194, 16);
@@ -226,7 +227,7 @@ namespace Vibely_App.View
             // 
             gradientPanel1.Angle = 45F;
             gradientPanel1.BackColor = Color.Transparent;
-            gradientPanel1.Controls.Add(pictureBox1);
+            gradientPanel1.Controls.Add(pctrUser);
             gradientPanel1.Controls.Add(btnRegisterRegister);
             gradientPanel1.Controls.Add(lblRegisterEmail);
             gradientPanel1.Controls.Add(lblRegisterPhoneNumber);
@@ -249,14 +250,14 @@ namespace Vibely_App.View
             gradientPanel1.StartColor = Color.FromArgb(64, 0, 64);
             gradientPanel1.TabIndex = 14;
             // 
-            // pictureBox1
+            // pctrUser
             // 
-            pictureBox1.Location = new Point(251, 208);
-            pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(53, 53);
-            pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
-            pictureBox1.TabIndex = 14;
-            pictureBox1.TabStop = false;
+            pctrUser.Location = new Point(251, 208);
+            pctrUser.Name = "pctrUser";
+            pctrUser.Size = new Size(53, 53);
+            pctrUser.SizeMode = PictureBoxSizeMode.StretchImage;
+            pctrUser.TabIndex = 14;
+            pctrUser.TabStop = false;
             // 
             // fileDlg
             // 
@@ -275,7 +276,7 @@ namespace Vibely_App.View
             TopMost = true;
             gradientPanel1.ResumeLayout(false);
             gradientPanel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pctrUser).EndInit();
             ResumeLayout(false);
         }
 
@@ -297,6 +298,6 @@ namespace Vibely_App.View
         private Label lblRegisterTitle;
         private GradientPanel gradientPanel1;
         private OpenFileDialog fileDlg;
-        private PictureBox pictureBox1;
+        private PictureBox pctrUser;
     }
 }

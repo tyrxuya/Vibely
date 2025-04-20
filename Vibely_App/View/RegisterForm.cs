@@ -8,16 +8,23 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Vibely_App.API;
+using Vibely_App.Business;
 using Vibely_App.Controls;
+using Vibely_App.Data.Models;
 
 namespace Vibely_App.View
 {
     public partial class RegisterForm : Form
     {
+        public IPasswordHasher PasswordHasher { get; set; }
+        public IUserBusiness UserBusiness { get; set; }
+
         public RegisterForm()
         {
             InitializeComponent();
             InitializeControls();
+            PasswordHasher = new PasswordHasher();
+            UserBusiness = new UserBusiness(new Data.VibelyDbContext());
         }
 
         private void InitializeControls()
@@ -39,7 +46,7 @@ namespace Vibely_App.View
                 if (filePath.EndsWith(".jpg") || filePath.EndsWith(".png") || filePath.EndsWith(".jpeg"))
                 {
                     // Load the image into the PictureBox
-                    pictureBox1.Image = Image.FromFile(filePath);
+                    pctrUser.Image = Image.FromFile(filePath);
                 }
                 else
                 {
@@ -50,9 +57,68 @@ namespace Vibely_App.View
 
         private void btnRegisterRegister_Click(object sender, EventArgs e)
         {
-            //Register logic
+            if (string.IsNullOrWhiteSpace(txtRegisterNames.Text) ||
+                string.IsNullOrWhiteSpace(txtRegisterUsername.Text) ||
+                string.IsNullOrWhiteSpace(txtRegisterPassword.Text) ||
+                string.IsNullOrWhiteSpace(txtRegisterPhoneNumber.Text) ||
+                string.IsNullOrWhiteSpace(txtRegisterEmail.Text) ||
+                pctrUser.Image == null)
+            {
+                MessageBox.Show("Please fill in all fields.");
+                ClearFields();
+                return;
+            }
+
+            string username = txtRegisterUsername.Text;
+            string password = PasswordHasher.Hash(txtRegisterPassword.Text);
+            string firstName = txtRegisterNames.Text.Split(" ").First();
+            string lastName = txtRegisterNames.Text.Split(" ").Last();
+            string phoneNumber = txtRegisterPhoneNumber.Text;
+            string email = txtRegisterEmail.Text;
+            byte[] profilePicture;
+            
+            using (var ms = new MemoryStream())
+            {
+                pctrUser.Image.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                profilePicture = ms.ToArray();
+            }
+
+            if (UserBusiness.IsUsernameTaken(username))
+            {
+                MessageBox.Show("Username is already taken. Please choose another one.");
+                ClearFields();
+                return;
+            }
+
+            User user = new()
+            {
+                Username = username,
+                Password = password,
+                FirstName = firstName,
+                LastName = lastName,
+                PhoneNumber = phoneNumber,
+                Email = email,
+                ProfilePicture = profilePicture,
+                IsPremium = false,
+                StartDate = DateOnly.FromDateTime(DateTime.Now),
+                EndDate = DateOnly.FromDateTime(DateTime.Now),
+                SubscriptionPrice = 11.99,
+            };
+
+            UserBusiness.Add(user);
+
             new LoginForm().Show();
             this.Hide();
+        }
+
+        private void ClearFields()
+        {
+            txtRegisterNames.Clear();
+            txtRegisterUsername.Clear();
+            txtRegisterPassword.Clear();
+            txtRegisterPhoneNumber.Clear();
+            txtRegisterEmail.Clear();
+            pctrUser.Image = null;
         }
     }
 }

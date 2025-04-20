@@ -9,5 +9,6 @@ namespace Vibely_App.API
 {
     public interface IUserBusiness : IBusiness<User>
     {
+        bool IsUsernameTaken(string username);
     }
 }
