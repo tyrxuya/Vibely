@@ -1,28 +1,50 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using Vibely_App.Data.Models;
+using Vibely_App.Controls;
+using Guna.UI2.WinForms;
 
 namespace Vibely_App.View
 {
     public partial class MainApp : Form
     {
-        public MainApp()
+        private UIConfigurator uiConfigurator;
+        public User ActiveUser { get; private set; }
+
+        // Properties to expose controls
+        public Panel SidePanel => sidePanel;
+        public Panel MainPanel => mainPanel;
+        public Panel PlayerPanel => playerPanel;
+        public Guna2CirclePictureBox PctrUser => pctrUser;
+        public Guna2HtmlLabel LblUserName => lblUserName;
+        public Guna2TextBox TxtSearch => txtSearch;
+        public Guna2Button BtnUpload => btnUpload;
+        public Guna2Button BtnSearch => btnSearch;
+        public Guna2Button BtnPlay => btnPlay;
+        public Guna2Button BtnPrev => btnPrev;
+        public Guna2Button BtnNext => btnNext;
+        public Guna2Button BtnVolume => btnVolume;
+        public Guna2TrackBar TrackBarProgress => trackBarProgress;
+        public Guna2TrackBar TrackBarVolume => trackBarVolume;
+        public Guna2HtmlLabel LblCurrentTime => lblCurrentTime;
+        public Guna2HtmlLabel LblTotalTime => lblTotalTime;
+        public Guna2HtmlLabel LblCurrentSong => lblCurrentSong;
+        public Guna2HtmlLabel LblCurrentArtist => lblCurrentArtist;
+
+        public MainApp(User user)
         {
+            ActiveUser = user;
             InitializeComponent();
-            for (int i = 0; i < 20; i++) 
-            {
-                Button button = new Button();
-                button.Location = new Point(10, 10 + (i * 30));
-                button.Size = new Size(200, 50);
-                sidePanel.Controls.Add(button);
-            }
-            pctrUser.Image = Image.FromFile("C:\\Users\\ivan2\\Pictures\\Screenshots\\Screenshot 2025-04-06 023950.png");
+            
+            uiConfigurator = new UIConfigurator(this, user);
+            uiConfigurator.InitializeUI();
+        }
+
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+            uiConfigurator?.InitializeUI();
         }
     }
 }
