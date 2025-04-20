@@ -184,6 +184,7 @@ namespace Vibely_App.View
             Margin = new Padding(3, 2, 3, 2);
             Name = "LoginForm";
             Text = "Vibely";
+            FormClosed += LoginForm_FormClosed;
             KeyDown += LoginForm_KeyDown;
             gradientPanel1.ResumeLayout(false);
             gradientPanel1.PerformLayout();

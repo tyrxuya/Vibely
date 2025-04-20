@@ -158,7 +158,8 @@ namespace Vibely_App.View
             if (!profileForm.WasCancelled)
             {
                 // User logged off, close the main app
-                mainForm.Close();
+                new LoginForm().Show();
+                mainForm.Hide();
             }
             else
             {
