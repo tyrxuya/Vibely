@@ -132,9 +132,13 @@ namespace Vibely_App.View
                 clickableProfilePanel.BackColor = Color.Transparent;
             };
 
+            // Remove any existing click handlers to prevent duplicates
+            clickableProfilePanel.Click -= profileClick;
+            mainApp.PctrUser.Click -= profileClick;
+            mainApp.LblUserName.Click -= profileClick;
+
+            // Add click handlers
             clickableProfilePanel.Click += profileClick;
-            mainApp.PctrUser.Click += profileClick;
-            mainApp.LblUserName.Click += profileClick;
 
             clickableProfilePanel.Controls.AddRange(new Control[] { mainApp.PctrUser, mainApp.LblUserName });
             return clickableProfilePanel;
@@ -191,7 +195,8 @@ namespace Vibely_App.View
                     Font = new Font("Arial Rounded MT Bold", 11),
                     TextAlign = HorizontalAlignment.Left,
                     Padding = new Padding(15, 0, 0, 0),
-                    Margin = new Padding(0, 0, 0, 10)
+                    Margin = new Padding(0, 0, 0, 10),
+                    Cursor = Cursors.Hand
                 };
                 playlistsFlowPanel.Controls.Add(btn);
             }
@@ -250,6 +255,7 @@ namespace Vibely_App.View
             mainApp.TxtSearch.ForeColor = ColorTranslator.FromHtml("#C7ADFF");
             mainApp.TxtSearch.BorderRadius = 20;
             mainApp.TxtSearch.BorderThickness = 0;
+            mainApp.TxtSearch.Cursor = Cursors.IBeam;
 
             mainApp.BtnUpload.Size = new Size(BUTTON_WIDTH, 40);
             mainApp.BtnUpload.FillColor = ColorTranslator.FromHtml("#DAC7FF");
@@ -257,6 +263,7 @@ namespace Vibely_App.View
             mainApp.BtnUpload.Text = "Upload";
             mainApp.BtnUpload.Font = new Font("Arial Rounded MT Bold", 10);
             mainApp.BtnUpload.BorderRadius = 20;
+            mainApp.BtnUpload.Cursor = Cursors.Hand;
 
             mainApp.BtnSearch.Size = new Size(BUTTON_WIDTH, 40);
             mainApp.BtnSearch.FillColor = ColorTranslator.FromHtml("#DAC7FF");
@@ -264,6 +271,7 @@ namespace Vibely_App.View
             mainApp.BtnSearch.Text = "Search";
             mainApp.BtnSearch.Font = new Font("Arial Rounded MT Bold", 10);
             mainApp.BtnSearch.BorderRadius = 20;
+            mainApp.BtnSearch.Cursor = Cursors.Hand;
 
             searchPanel.Controls.AddRange(new Control[] { mainApp.BtnUpload, mainApp.TxtSearch, mainApp.BtnSearch });
 
@@ -485,11 +493,7 @@ namespace Vibely_App.View
             // TODO: Add seek functionality
         }
 
-        private void SetupEventHandlers()
-        {
-            // Event handlers are now set up in SetupPlayerEventHandlers()
-        }
-
+        //To be used as reference later
         private void PopulateWithSampleData()
         {
             var mainTableLayout = mainApp.MainPanel.Controls[0] as TableLayoutPanel;
@@ -518,6 +522,7 @@ namespace Vibely_App.View
                     var songControl = new SongControl(song);
                     songControl.Width = songsFlowPanel.Width - 40;
                     songControl.Margin = new Padding(0, 0, 0, 10);
+                    songControl.Cursor = Cursors.Hand;
                     songsFlowPanel.Controls.Add(songControl);
                 }
             }
