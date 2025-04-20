@@ -259,6 +259,9 @@ namespace Vibely_App.View
                 this.Close();
                 new ProfileForm(user).Show();
             };
+
+            // --- ADD Handler for Create Playlist Button ---
+            createPlaylistBtn.Click += CreatePlaylistBtn_Click;
         }
 
         private Guna2Panel CreateInfoPanel(string title, string[] items)
@@ -321,5 +324,86 @@ namespace Vibely_App.View
         }
 
         public bool WasCancelled => wasCancelled;
+
+        // --- ADD Handler for Create Playlist Button ---
+        private void CreatePlaylistBtn_Click(object sender, EventArgs e)
+        {
+            string playlistName = ShowInputBox("Enter playlist name:", "Create Playlist");
+            
+            if (!string.IsNullOrWhiteSpace(playlistName))
+            {
+                try
+                {
+                    var playlistBusiness = new Business.PlaylistBusiness(new Data.VibelyDbContext()); // Example instantiation
+                    Playlist playlist = new Playlist
+                    {
+                        Title = playlistName,
+                        Duration = 0
+                    };
+                    playlistBusiness.Add(playlist);
+
+                    var userPlaylistBusiness = new Business.UserPlaylistBusiness(new Data.VibelyDbContext());
+                    UserPlaylist userPlaylist = new UserPlaylist
+                    {
+                        UserId = user.Id,
+                        PlaylistId = playlist.Id
+                    };
+                    userPlaylistBusiness.Add(userPlaylist);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    // Log the exception ex
+                }
+            }
+            else if (playlistName != null) // User clicked OK but entered empty name
+            {
+                 MessageBox.Show("Playlist name cannot be empty.", "Invalid Name", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            // If playlistName is null, user cancelled.
+        }
+        
+        // --- ADD Static Helper Method for Input Box ---
+        private static string ShowInputBox(string prompt, string title)
+        {
+            using (Form inputBox = new Form())
+            {
+                inputBox.Width = 350;
+                inputBox.Height = 180;
+                inputBox.Text = title;
+                inputBox.StartPosition = FormStartPosition.CenterParent;
+                inputBox.FormBorderStyle = FormBorderStyle.FixedDialog;
+                inputBox.MinimizeBox = false;
+                inputBox.MaximizeBox = false;
+
+                Label lblPrompt = new Label() { Left = 20, Top = 20, Width=300, Text = prompt };
+                TextBox txtInput = new TextBox() { Left = 20, Top = 50, Width = 300 };
+                txtInput.Anchor |= AnchorStyles.Right;
+
+                Button btnOk = new Button() { Text = "OK", Left = 140, Width = 80, Top = 90, DialogResult = DialogResult.OK };
+                btnOk.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+                
+                Button btnCancel = new Button() { Text = "Cancel", Left = 230, Width = 80, Top = 90, DialogResult = DialogResult.Cancel };
+                btnCancel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+
+                inputBox.Controls.Add(lblPrompt);
+                inputBox.Controls.Add(txtInput);
+                inputBox.Controls.Add(btnOk);
+                inputBox.Controls.Add(btnCancel);
+                inputBox.AcceptButton = btnOk;
+                inputBox.CancelButton = btnCancel;
+
+                DialogResult result = inputBox.ShowDialog();
+
+                if (result == DialogResult.OK)
+                {
+                    return txtInput.Text;
+                }
+                else
+                {
+                    return null; // Return null if cancelled
+                }
+            }
+        }
     }
 } 
