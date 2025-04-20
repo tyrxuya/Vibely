@@ -1,4 +1,4 @@
-﻿using Vibely_App.Controls;
+using Vibely_App.Controls;
 
 namespace Vibely_App.View
 {
