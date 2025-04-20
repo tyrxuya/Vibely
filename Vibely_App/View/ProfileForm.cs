@@ -21,18 +21,22 @@ namespace Vibely_App.View
             this.Size = new Size(1080, 720); // Adjusted size
             this.MinimizeBox = false;
             this.MaximizeBox = false;
-            this.BackColor = ColorTranslator.FromHtml("#190028");
-            
+            this.BackColor = ColorTranslator.FromHtml(UIConfigurator.IsDarkMode ? "#190028" : "#DAC7FF");
+
             InitializeUI();
         }
 
         private void InitializeComponent()
         {
-            this.SuspendLayout();
-            this.AutoScaleMode = AutoScaleMode.Font;
-            this.ClientSize = new Size(1080, 720); // Adjusted size
-            this.Name = "ProfileForm";
-            this.ResumeLayout(false);
+            SuspendLayout();
+            // 
+            // ProfileForm
+            // 
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(1080, 720);
+            Name = "ProfileForm";
+            ResumeLayout(false);
         }
 
         private void InitializeUI()
@@ -41,17 +45,17 @@ namespace Vibely_App.View
             var mainContainer = new Guna2Panel
             {
                 Dock = DockStyle.Fill,
-                BackColor = ColorTranslator.FromHtml("#190028"),
+                BackColor = ColorTranslator.FromHtml(UIConfigurator.IsDarkMode ? "#190028" : "#DAC7FF"),
                 Padding = new Padding(10) // Reduced padding
             };
 
             // Profile picture (centered circle)
             var profilePicture = new Guna2CirclePictureBox
             {
-                Size = new Size(160, 160), 
+                Size = new Size(160, 160),
                 SizeMode = PictureBoxSizeMode.StretchImage,
                 Anchor = AnchorStyles.Top,
-                BackColor = Color.Transparent 
+                BackColor = Color.Transparent
             };
 
             // Display profile image or default initial
@@ -60,40 +64,41 @@ namespace Vibely_App.View
                 using (var ms = new System.IO.MemoryStream(user.ProfilePicture))
                 {
                     try { profilePicture.Image = Image.FromStream(ms); }
-                    catch { /* Handle potential image loading error */ 
-                          profilePicture.BackColor = ColorTranslator.FromHtml("#D9D9D9"); // Fallback color on error
+                    catch
+                    { /* Handle potential image loading error */
+                        profilePicture.BackColor = ColorTranslator.FromHtml("#D9D9D9"); // Fallback color on error
                     }
                 }
             }
             else
             {
-                 profilePicture.BackColor = ColorTranslator.FromHtml("#D9D9D9"); // Fallback color if no image
-                 profilePicture.Paint += (s, e) =>
-                {
-                    string initial = "??";
-                    if (!string.IsNullOrEmpty(user.FirstName) && !string.IsNullOrEmpty(user.LastName))
-                    {
-                        initial = (user.FirstName.FirstOrDefault().ToString() + user.LastName.FirstOrDefault().ToString()).ToUpper();
-                    }
-                    else if (!string.IsNullOrEmpty(user.FirstName))
-                    {
-                         initial = user.FirstName.Substring(0, Math.Min(user.FirstName.Length, 2)).ToUpper();
-                    }
-                    else if (!string.IsNullOrEmpty(user.Username))
-                    {
-                         initial = user.Username.Substring(0, Math.Min(user.Username.Length, 2)).ToUpper();
-                    }
-                    
-                    var font = new Font("Arial", 70, FontStyle.Bold); 
-                    var textSize = e.Graphics.MeasureString(initial, font);
-                    e.Graphics.DrawString(
-                        initial,
-                        font,
-                        new SolidBrush(ColorTranslator.FromHtml("#190028")),
-                        (profilePicture.Width - textSize.Width) / 2,
-                        (profilePicture.Height - textSize.Height) / 2
-                    );
-                };
+                profilePicture.BackColor = ColorTranslator.FromHtml("#D9D9D9"); // Fallback color if no image
+                profilePicture.Paint += (s, e) =>
+               {
+                   string initial = "??";
+                   if (!string.IsNullOrEmpty(user.FirstName) && !string.IsNullOrEmpty(user.LastName))
+                   {
+                       initial = (user.FirstName.FirstOrDefault().ToString() + user.LastName.FirstOrDefault().ToString()).ToUpper();
+                   }
+                   else if (!string.IsNullOrEmpty(user.FirstName))
+                   {
+                       initial = user.FirstName.Substring(0, Math.Min(user.FirstName.Length, 2)).ToUpper();
+                   }
+                   else if (!string.IsNullOrEmpty(user.Username))
+                   {
+                       initial = user.Username.Substring(0, Math.Min(user.Username.Length, 2)).ToUpper();
+                   }
+
+                   var font = new Font("Arial", 70, FontStyle.Bold);
+                   var textSize = e.Graphics.MeasureString(initial, font);
+                   e.Graphics.DrawString(
+                       initial,
+                       font,
+                       new SolidBrush(ColorTranslator.FromHtml(UIConfigurator.IsDarkMode ? "#190028" : "#DAC7FF")),
+                       (profilePicture.Width - textSize.Width) / 2,
+                       (profilePicture.Height - textSize.Height) / 2
+                   );
+               };
             }
 
             // User name label (centered)
@@ -106,7 +111,7 @@ namespace Vibely_App.View
                 TextAlignment = ContentAlignment.MiddleCenter,
                 Anchor = AnchorStyles.Top
             };
-            
+
             // Username label (centered)
             var usernameLabel = new Guna2HtmlLabel
             {
@@ -119,26 +124,26 @@ namespace Vibely_App.View
             };
 
             // Info panels
-            var leftPanel = CreateInfoPanel("Personal information:", 
-                new string[] { 
-                    $"E-Mail: {user.Email ?? "example_email@gmail.com"}", 
-                    $"Phone: {user.PhoneNumber ?? "+359888777666"}" 
-                }); 
-            
-            var rightPanel = CreateInfoPanel("Profile information:", 
-                new string[] { 
-                    "Total songs: 12", 
-                    "Total playlists: 6" 
-                }); 
+            var leftPanel = CreateInfoPanel("Personal information:",
+                new string[] {
+                    $"E-Mail: {user.Email ?? "example_email@gmail.com"}",
+                    $"Phone: {user.PhoneNumber ?? "+359888777666"}"
+                });
+
+            var rightPanel = CreateInfoPanel("Profile information:",
+                new string[] {
+                    "Total songs: 12",
+                    "Total playlists: 6"
+                });
 
             // Info panels container
             var infoPanelsContainer = new Guna2Panel
             {
-                Height = Math.Max(leftPanel.Height, rightPanel.Height), 
+                Height = Math.Max(leftPanel.Height, rightPanel.Height),
                 BackColor = Color.Transparent,
                 Anchor = AnchorStyles.Top
             };
-            infoPanelsContainer.Controls.Add(leftPanel); 
+            infoPanelsContainer.Controls.Add(leftPanel);
             infoPanelsContainer.Controls.Add(rightPanel);
 
             // --- Button Setup --- 
@@ -151,11 +156,11 @@ namespace Vibely_App.View
                 BackColor = Color.Transparent,
                 Anchor = AnchorStyles.Top // Anchor within the table cell
             };
-            
+
             var createPlaylistBtn = CreatePurpleButton("Create playlist", 180);
             var switchAppearanceBtn = CreatePurpleButton("Switch appearance", 220);
             var logOffBtn = CreatePurpleButton("Log off", 130);
-            
+
             topButtonsFlowPanel.Controls.Add(createPlaylistBtn);
             topButtonsFlowPanel.Controls.Add(switchAppearanceBtn);
             topButtonsFlowPanel.Controls.Add(logOffBtn);
@@ -163,10 +168,10 @@ namespace Vibely_App.View
             // Go back button
             var goBackBtn = CreatePurpleButton("Go back", 150);
             goBackBtn.Anchor = AnchorStyles.None; // Allow manual centering within table cell
-            goBackBtn.Click += (s, e) => 
+            goBackBtn.Click += (s, e) =>
             {
                 wasCancelled = true;
-                this.Close(); 
+                this.Close();
             };
 
             // TableLayoutPanel to hold both button rows
@@ -193,19 +198,19 @@ namespace Vibely_App.View
             mainContainer.Controls.Add(allButtonsPanel); // Add the new table layout panel
 
             this.Controls.Add(mainContainer);
-            
+
             // --- Centering and Positioning Function ---
             Action centerElements = () =>
             {
-                mainContainer.PerformLayout(); 
-                
+                mainContainer.PerformLayout();
+
                 int containerWidth = mainContainer.ClientSize.Width;
-                int verticalSpacing = 20; 
-                
-                profilePicture.Location = new Point((containerWidth - profilePicture.Width) / 2, 30); 
+                int verticalSpacing = 20;
+
+                profilePicture.Location = new Point((containerWidth - profilePicture.Width) / 2, 30);
                 nameLabel.Location = new Point((containerWidth - nameLabel.Width) / 2, profilePicture.Bottom + verticalSpacing);
                 usernameLabel.Location = new Point((containerWidth - usernameLabel.Width) / 2, nameLabel.Bottom + (verticalSpacing / 2));
-                
+
                 // Position Info Panels and Container
                 int infoPanelSpacing = 40;
                 leftPanel.Location = new Point(0, 0);
@@ -223,10 +228,10 @@ namespace Vibely_App.View
                     topRow.Location = new Point((cellWidth - topRow.Width) / 2, topRow.Location.Y);
                     topRow.Anchor = AnchorStyles.None; // Override FlowLayoutPanel default anchor if needed
                 }
-                 if (allButtonsPanel.GetControlFromPosition(0, 1) is Control bottomRowButton)
+                if (allButtonsPanel.GetControlFromPosition(0, 1) is Control bottomRowButton)
                 {
                     // Center the 'Go Back' button in the second row
-                     var cellWidth = allButtonsPanel.GetColumnWidths()[0];
+                    var cellWidth = allButtonsPanel.GetColumnWidths()[0];
                     bottomRowButton.Location = new Point((cellWidth - bottomRowButton.Width) / 2, bottomRowButton.Location.Y);
                 }
                 allButtonsPanel.PerformLayout(); // Recalculate layout after positioning controls inside
@@ -247,14 +252,21 @@ namespace Vibely_App.View
                 wasCancelled = false;
                 this.Close();
             };
+
+            switchAppearanceBtn.Click += (s, e) =>
+            {
+                UIConfigurator.ToggleTheme();
+                this.Close();
+                new ProfileForm(user).Show();
+            };
         }
 
         private Guna2Panel CreateInfoPanel(string title, string[] items)
         {
-             var panel = new Guna2Panel
+            var panel = new Guna2Panel
             {
                 // Width calculated dynamically
-                BackColor = ColorTranslator.FromHtml("#393144"),
+                BackColor = ColorTranslator.FromHtml(UIConfigurator.IsDarkMode ? "#393144" : "#AC8BEE"),
                 BorderRadius = 20,
                 Padding = new Padding(20)
             };
@@ -263,22 +275,22 @@ namespace Vibely_App.View
             {
                 Text = title,
                 Font = new Font("Arial", 18, FontStyle.Bold),
-                ForeColor = Color.White,
+                ForeColor = UIConfigurator.IsDarkMode ? Color.White : Color.Black,
                 AutoSize = true,
                 Location = new Point(20, 20)
             };
             panel.Controls.Add(titleLabel);
-            
+
             int yPos = titleLabel.Bottom + 20;
             int maxWidth = titleLabel.Width; // Start with title width
-            
+
             foreach (var item in items)
             {
                 var label = new Guna2HtmlLabel
                 {
                     Text = item,
                     Font = new Font("Arial", 16),
-                    ForeColor = Color.White,
+                    ForeColor = UIConfigurator.IsDarkMode ? Color.White : Color.Black,
                     AutoSize = true,
                     Location = new Point(20, yPos)
                 };
@@ -286,7 +298,7 @@ namespace Vibely_App.View
                 yPos += label.Height + 20;
                 maxWidth = Math.Max(maxWidth, label.Width); // Track max label width
             }
-            
+
             panel.Width = maxWidth + panel.Padding.Left + panel.Padding.Right; // Set width based on max content + padding
             panel.Height = yPos + 10; // Auto-adjust height based on content + padding
             return panel;
@@ -300,8 +312,8 @@ namespace Vibely_App.View
                 Width = width,
                 Height = 45,
                 BorderRadius = 22,
-                FillColor = ColorTranslator.FromHtml("#D0BFFF"),
-                ForeColor = Color.Black,
+                FillColor = ColorTranslator.FromHtml(UIConfigurator.IsDarkMode ? "#D0BFFF" : "#46325D"),
+                ForeColor = UIConfigurator.IsDarkMode ? Color.Black : Color.White,
                 Font = new Font("Arial", 14, FontStyle.Bold),
                 Cursor = Cursors.Hand,
                 Margin = new Padding(8)

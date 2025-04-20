@@ -36,7 +36,7 @@ namespace Vibely_App.View
         {
             ActiveUser = user;
             InitializeComponent();
-            
+
             uiConfigurator = new UIConfigurator(this, user);
             uiConfigurator.InitializeUI();
 
@@ -54,6 +54,11 @@ namespace Vibely_App.View
         {
             base.OnLoad(e);
             // uiConfigurator?.InitializeUI(); // Initialization is already done in constructor
+        }
+
+        private void MainApp_VisibleChanged(object sender, EventArgs e)
+        {
+            uiConfigurator.InitializeUI();
         }
     }
 }
