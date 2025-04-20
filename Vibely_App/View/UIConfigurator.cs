@@ -146,8 +146,26 @@ namespace Vibely_App.View
 
         private void profileClick(object sender, EventArgs e)
         {
-            // Handle profile click event
-            MessageBox.Show($"Profile clicked: {activeUser.FirstName} {activeUser.LastName}");
+            // Hide the main form before showing profile
+            Form mainForm = mainApp as Form;
+            mainForm.Hide();
+            
+            // Show profile form
+            var profileForm = new ProfileForm(activeUser);
+            profileForm.ShowDialog();
+            
+            // Check if user logged off
+            if (!profileForm.WasCancelled)
+            {
+                // User logged off, close the main app
+                new LoginForm().Show();
+                mainForm.Hide();
+            }
+            else
+            {
+                // User just closed the profile, show main form again
+                mainForm.Show();
+            }
         }
 
         private FlowLayoutPanel ConfigurePlaylistPanel()

@@ -39,12 +39,21 @@ namespace Vibely_App.View
             
             uiConfigurator = new UIConfigurator(this, user);
             uiConfigurator.InitializeUI();
+
+            // Ensure application exits when this main form closes
+            this.FormClosed += MainApp_FormClosed;
+        }
+
+        private void MainApp_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            // Force the application to exit, terminating any lingering threads
+            Environment.Exit(0);
         }
 
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
-            uiConfigurator?.InitializeUI();
+            // uiConfigurator?.InitializeUI(); // Initialization is already done in constructor
         }
     }
 }

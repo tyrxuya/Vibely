@@ -75,5 +75,11 @@ namespace Vibely_App.View
                 btnLogin_Click(sender, e);
             }
         }
+
+        private void LoginForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            // Force the application to exit, terminating any lingering threads
+            Environment.Exit(0);
+        }
     }
 }
