@@ -10,18 +10,22 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Vibely_App.API;
+using Vibely_App.Business;
 using Vibely_App.Controls;
+using Vibely_App.Data.Models;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Vibely_App.View
 {
     public partial class LoginForm : Form
     {
+        public IUserBusiness UserBusiness { get; set; }
+
         public LoginForm()
         {
             InitializeComponent();
             InitializeControls();
-
+            UserBusiness = new UserBusiness(new Data.VibelyDbContext());
         }
 
         private void btnRegister_Click(object sender, EventArgs e)
@@ -42,6 +46,25 @@ namespace Vibely_App.View
             gradientPanel1.Controls.Add(lblNoAccount);
             IconHelper.AddIconToControl(gradientPanel1, txtLoginUsername, APIConstants.IconLogin);
             IconHelper.AddIconToControl(gradientPanel1, txtLoginPassword, APIConstants.IconPassword);
+        }
+
+        private void btnLogin_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(txtLoginUsername.Text) || string.IsNullOrEmpty(txtLoginPassword.Text))
+            {
+                MessageBox.Show("Please fill in all fields.");
+                return;
+            }
+
+            User user = UserBusiness.FindByCredentials(txtLoginUsername.Text, txtLoginPassword.Text);
+
+            if (user == null)
+            {
+                MessageBox.Show("Invalid username or password.");
+                return;
+            }
+
+            //Send user to main form when implemented
         }
     }
 }
