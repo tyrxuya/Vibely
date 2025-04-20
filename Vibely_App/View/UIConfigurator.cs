@@ -174,6 +174,7 @@ namespace Vibely_App.View
             playlistsFlowPanel.Controls.Add(playlistsLabel);
 
             // Fixed playlist array without duplicates
+            // To be used later as reference
             string[] playlists = { 
                 "My Favorites", 
                 "Rock Collection", 
