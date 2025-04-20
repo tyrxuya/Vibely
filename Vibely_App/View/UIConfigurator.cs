@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using Vibely_App.Data.Models;
 using Vibely_App.Controls;
 using Guna.UI2.WinForms;
+using System.Diagnostics;
 
 namespace Vibely_App.View
 {
@@ -14,6 +15,16 @@ namespace Vibely_App.View
 
         private readonly MainApp mainApp;
         private readonly User activeUser;
+
+        public static bool IsDarkMode { get; set; } = true;
+        public static event EventHandler ThemeToggled;
+
+        public static void ToggleTheme()
+        {
+            IsDarkMode = !IsDarkMode;
+            Debug.WriteLine($"Theme toggled. IsDarkMode: {IsDarkMode}");
+            ThemeToggled?.Invoke(null, EventArgs.Empty); // Notify listeners
+        }
 
         public UIConfigurator(MainApp mainApp, User activeUser)
         {
@@ -38,7 +49,7 @@ namespace Vibely_App.View
             mainApp.SidePanel.Controls.Clear(); // Clear all controls first
             
             mainApp.SidePanel.Width = SIDEBAR_WIDTH;
-            mainApp.SidePanel.BackColor = ColorTranslator.FromHtml("#190028");
+            mainApp.SidePanel.BackColor = ColorTranslator.FromHtml(IsDarkMode ? "#190028" : "#DAC7FF");
             mainApp.SidePanel.Dock = DockStyle.Left;
             mainApp.SidePanel.Padding = new Padding(0);
 
@@ -96,7 +107,6 @@ namespace Vibely_App.View
             else
             {
                 // Set a default profile picture or initial
-                mainApp.PctrUser.BackColor = ColorTranslator.FromHtml("#46325D");
                 mainApp.PctrUser.Image = null;
                 mainApp.PctrUser.Paint += (s, e) =>
                 {
@@ -106,7 +116,7 @@ namespace Vibely_App.View
                     e.Graphics.DrawString(
                         initial,
                         font,
-                        new SolidBrush(ColorTranslator.FromHtml("#C7ADFF")),
+                        new SolidBrush(ColorTranslator.FromHtml(IsDarkMode ? "#C7ADFF" : "#3F3649")),
                         (mainApp.PctrUser.Width - textSize.Width) / 2,
                         (mainApp.PctrUser.Height - textSize.Height) / 2
                     );
@@ -116,7 +126,7 @@ namespace Vibely_App.View
             // Configure username label
             mainApp.LblUserName.Text = $"{activeUser.FirstName} {activeUser.LastName}";
             mainApp.LblUserName.Font = new Font("Arial Rounded MT Bold", 12);
-            mainApp.LblUserName.ForeColor = ColorTranslator.FromHtml("#C7ADFF");
+            mainApp.LblUserName.ForeColor = ColorTranslator.FromHtml(IsDarkMode ? "#C7ADFF" : "#3F3649");
             mainApp.LblUserName.AutoSize = true;
             mainApp.LblUserName.Location = new Point(mainApp.PctrUser.Right + 10, mainApp.PctrUser.Top + (mainApp.PctrUser.Height - 20) / 2);
             mainApp.LblUserName.Cursor = Cursors.Hand;
@@ -124,7 +134,7 @@ namespace Vibely_App.View
             // Add hover effect
             clickableProfilePanel.MouseEnter += (s, e) =>
             {
-                clickableProfilePanel.BackColor = ColorTranslator.FromHtml("#46325D");
+                clickableProfilePanel.BackColor = ColorTranslator.FromHtml(IsDarkMode ? "#46325D" : "#AC8BEE");
             };
 
             clickableProfilePanel.MouseLeave += (s, e) =>
@@ -184,7 +194,7 @@ namespace Vibely_App.View
             {
                 Text = "PLAYLISTS",
                 Font = new Font("Arial Rounded MT Bold", 12),
-                ForeColor = ColorTranslator.FromHtml("#C7ADFF"),
+                ForeColor = ColorTranslator.FromHtml(IsDarkMode ? "#C7ADFF" : "#3F3649"),
                 AutoSize = true,
                 Margin = new Padding(0, 0, 0, 10)
             };
@@ -208,8 +218,8 @@ namespace Vibely_App.View
                     Text = playlist,
                     Width = SIDEBAR_WIDTH - 40,
                     Height = 40,
-                    FillColor = ColorTranslator.FromHtml("#46325D"),
-                    ForeColor = ColorTranslator.FromHtml("#C7ADFF"),
+                    FillColor = ColorTranslator.FromHtml(IsDarkMode ? "#46325D" : "#E0AAFF"),
+                    ForeColor = ColorTranslator.FromHtml(IsDarkMode ? "#C7ADFF" : "#3F3649"),
                     BorderRadius = 10,
                     Font = new Font("Arial Rounded MT Bold", 11),
                     TextAlign = HorizontalAlignment.Left,
@@ -225,7 +235,7 @@ namespace Vibely_App.View
 
         private void ConfigureMainPanel()
         {
-            mainApp.MainPanel.BackColor = ColorTranslator.FromHtml("#1B1B1B");
+            mainApp.MainPanel.BackColor = ColorTranslator.FromHtml(IsDarkMode ? "#1B1B1B" : "#E4E4E4");
             mainApp.MainPanel.Dock = DockStyle.Fill;
             mainApp.MainPanel.Padding = new Padding(20);
 
@@ -268,25 +278,26 @@ namespace Vibely_App.View
             const int TOTAL_WIDTH = BUTTON_WIDTH + SPACING + SEARCH_BAR_WIDTH + SPACING + BUTTON_WIDTH;
 
             mainApp.TxtSearch.Size = new Size(SEARCH_BAR_WIDTH, 40);
+            mainApp.TxtSearch.ForeColor = ColorTranslator.FromHtml(IsDarkMode ? "#C7ADFF" : "#3F3649");
+            mainApp.TxtSearch.PlaceholderForeColor = ColorTranslator.FromHtml(IsDarkMode ? "#C7ADFF" : "#3F3649");
             mainApp.TxtSearch.PlaceholderText = "Search for songs...";
             mainApp.TxtSearch.Font = new Font("Arial Rounded MT Bold", 12);
-            mainApp.TxtSearch.FillColor = ColorTranslator.FromHtml("#2D1F3D");
-            mainApp.TxtSearch.ForeColor = ColorTranslator.FromHtml("#C7ADFF");
+            mainApp.TxtSearch.FillColor = ColorTranslator.FromHtml(IsDarkMode ? "#2D1F3D" : "#D9D9D9");
             mainApp.TxtSearch.BorderRadius = 20;
             mainApp.TxtSearch.BorderThickness = 0;
             mainApp.TxtSearch.Cursor = Cursors.IBeam;
 
             mainApp.BtnUpload.Size = new Size(BUTTON_WIDTH, 40);
-            mainApp.BtnUpload.FillColor = ColorTranslator.FromHtml("#DAC7FF");
-            mainApp.BtnUpload.ForeColor = Color.Black;
+            mainApp.BtnUpload.FillColor = ColorTranslator.FromHtml(IsDarkMode ? "#DAC7FF" : "#46325D");
+            mainApp.BtnUpload.ForeColor = IsDarkMode ? Color.Black : Color.White;
             mainApp.BtnUpload.Text = "Upload";
             mainApp.BtnUpload.Font = new Font("Arial Rounded MT Bold", 10);
             mainApp.BtnUpload.BorderRadius = 20;
             mainApp.BtnUpload.Cursor = Cursors.Hand;
 
             mainApp.BtnSearch.Size = new Size(BUTTON_WIDTH, 40);
-            mainApp.BtnSearch.FillColor = ColorTranslator.FromHtml("#DAC7FF");
-            mainApp.BtnSearch.ForeColor = Color.Black;
+            mainApp.BtnSearch.FillColor = ColorTranslator.FromHtml(IsDarkMode ? "#DAC7FF" : "#46325D");
+            mainApp.BtnSearch.ForeColor = IsDarkMode ? Color.Black : Color.White;
             mainApp.BtnSearch.Text = "Search";
             mainApp.BtnSearch.Font = new Font("Arial Rounded MT Bold", 10);
             mainApp.BtnSearch.BorderRadius = 20;
@@ -327,7 +338,7 @@ namespace Vibely_App.View
         {
             mainApp.PlayerPanel.Controls.Clear();
             mainApp.PlayerPanel.Height = PLAYER_HEIGHT;
-            mainApp.PlayerPanel.BackColor = ColorTranslator.FromHtml("#3F3649");
+            mainApp.PlayerPanel.BackColor = ColorTranslator.FromHtml(IsDarkMode ? "#3F3649" : "#AC8BEE");
             mainApp.PlayerPanel.Dock = DockStyle.Bottom;
             mainApp.PlayerPanel.Padding = new Padding(20);
 
@@ -336,22 +347,22 @@ namespace Vibely_App.View
             {
                 Width = 150,
                 Height = 40,
-                BackColor = ColorTranslator.FromHtml("#3F3649")
+                BackColor = ColorTranslator.FromHtml(IsDarkMode ? "#3F3649" : "#AC8BEE")
             };
 
             // Configure player controls
             mainApp.BtnPrev.Size = new Size(40, 40);
             mainApp.BtnPrev.Location = new Point(0, 0);
-            mainApp.BtnPrev.FillColor = ColorTranslator.FromHtml("#3F3649");
-            mainApp.BtnPrev.ForeColor = ColorTranslator.FromHtml("#C7ADFF");
+            mainApp.BtnPrev.FillColor = ColorTranslator.FromHtml(IsDarkMode ? "#3F3649" : "#AC8BEE");
+            mainApp.BtnPrev.ForeColor = ColorTranslator.FromHtml(IsDarkMode ? "#C7ADFF" : "#3F3649");
             mainApp.BtnPrev.Text = "⏮";
             mainApp.BtnPrev.Font = new Font("Arial Rounded MT Bold", 12);
             mainApp.BtnPrev.Cursor = Cursors.Hand;
 
             mainApp.BtnPlay.Size = new Size(40, 40);
             mainApp.BtnPlay.Location = new Point(55, 0);
-            mainApp.BtnPlay.FillColor = ColorTranslator.FromHtml("#3F3649");
-            mainApp.BtnPlay.ForeColor = ColorTranslator.FromHtml("#C7ADFF");
+            mainApp.BtnPlay.FillColor = ColorTranslator.FromHtml(IsDarkMode ? "#3F3649" : "#AC8BEE");
+            mainApp.BtnPlay.ForeColor = ColorTranslator.FromHtml(IsDarkMode ? "#C7ADFF" : "#3F3649");
             mainApp.BtnPlay.Text = "▶";
             mainApp.BtnPlay.Font = new Font("Arial Rounded MT Bold", 12);
             mainApp.BtnPlay.TextAlign = HorizontalAlignment.Center;
@@ -359,8 +370,8 @@ namespace Vibely_App.View
 
             mainApp.BtnNext.Size = new Size(40, 40);
             mainApp.BtnNext.Location = new Point(110, 0);
-            mainApp.BtnNext.FillColor = ColorTranslator.FromHtml("#3F3649");
-            mainApp.BtnNext.ForeColor = ColorTranslator.FromHtml("#C7ADFF");
+            mainApp.BtnNext.FillColor = ColorTranslator.FromHtml(IsDarkMode ? "#3F3649" : "#AC8BEE");
+            mainApp.BtnNext.ForeColor = ColorTranslator.FromHtml(IsDarkMode ? "#C7ADFF" : "#3F3649");
             mainApp.BtnNext.Text = "⏭";
             mainApp.BtnNext.Font = new Font("Arial Rounded MT Bold", 12);
             mainApp.BtnNext.Cursor = Cursors.Hand;
@@ -373,13 +384,13 @@ namespace Vibely_App.View
             {
                 Height = 40,
                 Width = 140,
-                BackColor = ColorTranslator.FromHtml("#3F3649")
+                BackColor = ColorTranslator.FromHtml(IsDarkMode ? "#3F3649" : "#AC8BEE")
             };
 
             mainApp.BtnVolume.Size = new Size(30, 30);
             mainApp.BtnVolume.Location = new Point(0, 3);
-            mainApp.BtnVolume.FillColor = ColorTranslator.FromHtml("#3F3649");
-            mainApp.BtnVolume.ForeColor = ColorTranslator.FromHtml("#C7ADFF");
+            mainApp.BtnVolume.FillColor = ColorTranslator.FromHtml(IsDarkMode ? "#3F3649" : "#AC8BEE");
+            mainApp.BtnVolume.ForeColor = ColorTranslator.FromHtml(IsDarkMode ? "#C7ADFF" : "#3F3649");
             mainApp.BtnVolume.Text = "🔊";
             mainApp.BtnVolume.Font = new Font("Arial Rounded MT Bold", 12);
             mainApp.BtnVolume.TextAlign = HorizontalAlignment.Center;
@@ -388,7 +399,7 @@ namespace Vibely_App.View
 
             mainApp.TrackBarVolume.Size = new Size(100, 23);
             mainApp.TrackBarVolume.Location = new Point(35, 5);
-            mainApp.TrackBarVolume.ThumbColor = ColorTranslator.FromHtml("#C7ADFF");
+            mainApp.TrackBarVolume.ThumbColor = ColorTranslator.FromHtml(IsDarkMode ? "#C7ADFF" : "#3F3649");
             mainApp.TrackBarVolume.Value = 50;
 
             volumePanel.Controls.AddRange(new Control[] { mainApp.BtnVolume, mainApp.TrackBarVolume });
@@ -397,26 +408,26 @@ namespace Vibely_App.View
             // Configure progress bar and labels
             mainApp.TrackBarProgress.Size = new Size(mainApp.PlayerPanel.Width - 600, 23);
             mainApp.TrackBarProgress.Location = new Point(300, 60);
-            mainApp.TrackBarProgress.ThumbColor = ColorTranslator.FromHtml("#C7ADFF");
+            mainApp.TrackBarProgress.ThumbColor = ColorTranslator.FromHtml(IsDarkMode ? "#C7ADFF" : "#3F3649");
 
             mainApp.LblCurrentTime.Text = "0:00";
             mainApp.LblCurrentTime.Location = new Point(260, 60);
-            mainApp.LblCurrentTime.ForeColor = ColorTranslator.FromHtml("#C7ADFF");
+            mainApp.LblCurrentTime.ForeColor = ColorTranslator.FromHtml(IsDarkMode ? "#C7ADFF" : "#3F3649");
             mainApp.LblCurrentTime.Font = new Font("Arial Rounded MT Bold", 10);
 
             mainApp.LblTotalTime.Text = "0:00";
             mainApp.LblTotalTime.Location = new Point(mainApp.PlayerPanel.Width - 280, 60);
-            mainApp.LblTotalTime.ForeColor = ColorTranslator.FromHtml("#C7ADFF");
+            mainApp.LblTotalTime.ForeColor = ColorTranslator.FromHtml(IsDarkMode ? "#C7ADFF" : "#3F3649");
             mainApp.LblTotalTime.Font = new Font("Arial Rounded MT Bold", 10);
 
             mainApp.LblCurrentSong.Text = "No song playing";
             mainApp.LblCurrentSong.Location = new Point(300, 20);
-            mainApp.LblCurrentSong.ForeColor = ColorTranslator.FromHtml("#C7ADFF");
+            mainApp.LblCurrentSong.ForeColor = ColorTranslator.FromHtml(IsDarkMode ? "#C7ADFF" : "#3F3649");
             mainApp.LblCurrentSong.Font = new Font("Arial Rounded MT Bold", 12);
 
             mainApp.LblCurrentArtist.Text = "Unknown artist";
             mainApp.LblCurrentArtist.Location = new Point(300, 40);
-            mainApp.LblCurrentArtist.ForeColor = ColorTranslator.FromHtml("#C7ADFF");
+            mainApp.LblCurrentArtist.ForeColor = ColorTranslator.FromHtml(IsDarkMode ? "#C7ADFF" : "#3F3649");
             mainApp.LblCurrentArtist.Font = new Font("Arial Rounded MT Bold", 10);
 
             mainApp.PlayerPanel.Controls.AddRange(new Control[] {
