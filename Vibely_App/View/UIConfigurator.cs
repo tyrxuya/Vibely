@@ -5,6 +5,8 @@ using Vibely_App.Data.Models;
 using Vibely_App.Controls;
 using Guna.UI2.WinForms;
 using System.Diagnostics;
+using Vibely_App.Business;
+using Vibely_App.Data;
 
 namespace Vibely_App.View
 {
@@ -203,13 +205,13 @@ namespace Vibely_App.View
 
             // Fixed playlist array without duplicates
             // To be used later as reference
-            string[] playlists = { 
-                "My Favorites", 
-                "Rock Collection", 
-                "Chill Vibes", 
-                "Party Mix", 
-                "Study Music" 
-            };
+            string[] playlists;
+
+            var userPlaylistsBusiness = new UserPlaylistBusiness(new VibelyDbContext());
+            var allPlaylists = userPlaylistsBusiness.GetAll();
+            playlists = allPlaylists.Where(p => p.UserId == activeUser.Id)
+                .Select(p => p.Playlist.Title)
+                .ToArray();
 
             foreach (var playlist in playlists)
             {
