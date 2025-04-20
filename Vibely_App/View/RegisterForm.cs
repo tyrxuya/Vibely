@@ -83,6 +83,13 @@ namespace Vibely_App.View
                 profilePicture = ms.ToArray();
             }
 
+            if (UserBusiness.IsUsernameTaken(username))
+            {
+                MessageBox.Show("Username is already taken. Please choose another one.");
+                ClearFields();
+                return;
+            }
+
             User user = new()
             {
                 Username = username,
