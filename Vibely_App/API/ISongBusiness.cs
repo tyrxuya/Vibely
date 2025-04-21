@@ -9,5 +9,6 @@ namespace Vibely_App.API
 {
     public interface ISongBusiness : IBusiness<Song>
     {
+        public bool UploadSong(User user, byte[] songData, string originalFileName);
     }
 }

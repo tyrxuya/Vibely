@@ -9,5 +9,6 @@ namespace Vibely_App.API
 {
     public interface IGenreBusiness : IBusiness<Genre>
     {
+        public Genre? FindByName(string name);
     }
 }
