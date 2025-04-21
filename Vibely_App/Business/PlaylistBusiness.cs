@@ -41,6 +41,12 @@ namespace Vibely_App.Business
         //        .FirstOrDefault(p => p.Id == playlist.Id && p.Title == playlist.Title);
         //}
 
+        public Playlist? FindByName(string name)
+        {
+            return _dbContext.Playlists
+                .Where(p => p.Title == name).FirstOrDefault();
+        }
+
         public void Remove(int id)
         {
             Playlist? playlist = _dbContext.Playlists.Find(id);

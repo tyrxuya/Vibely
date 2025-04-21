@@ -120,7 +120,7 @@ namespace Vibely_App.View
 
                             if (success)
                             {
-                                uiConfigurator.UpdateSongs();
+                                uiConfigurator.UpdateSongs(null);
                             }
                             else
                             {

@@ -17,6 +17,7 @@ namespace Vibely_App.View
 
         private readonly MainApp mainApp;
         private readonly User activeUser;
+        private Playlist activePlaylist;
         private FlowLayoutPanel songFlowPanel;
         private SongBusiness songBusiness;
 
@@ -208,15 +209,24 @@ namespace Vibely_App.View
 
             // Fixed playlist array without duplicates
             // To be used later as reference
-            string[] playlists;
+            List<string> playlists;
 
             var userPlaylistsBusiness = new UserPlaylistBusiness(new VibelyDbContext());
             var allPlaylists = userPlaylistsBusiness.GetAll();
             playlists = allPlaylists.Where(p => p.UserId == activeUser.Id)
                 .Select(p => p.Playlist.Title)
-                .ToArray();
-
+                .ToList();
+            List<string> finalPlaylists = new();
+            finalPlaylists.Add("All songs");
             foreach (var playlist in playlists)
+            {
+                if (!finalPlaylists.Contains(playlist))
+                {
+                    finalPlaylists.Add(playlist);
+                }
+            }
+
+            foreach (var playlist in finalPlaylists)
             {
                 var btn = new Guna2Button
                 {
@@ -232,10 +242,31 @@ namespace Vibely_App.View
                     Margin = new Padding(0, 0, 0, 10),
                     Cursor = Cursors.Hand
                 };
+                btn.Click += (s, e) => changeActivePlaylist(btn);
                 playlistsFlowPanel.Controls.Add(btn);
             }
 
             return playlistsFlowPanel;
+        }
+
+        private void changeActivePlaylist(Guna2Button btn)
+        {
+            string playlistName = btn.Text;
+
+            if (playlistName == "All songs")
+            {
+                activePlaylist = null;
+                UpdateSongs(null);
+                return;
+            }
+
+            var playlistBusiness = new PlaylistBusiness(new VibelyDbContext());
+            var playlist = playlistBusiness.FindByName(playlistName);
+            if (playlist != null)
+            {
+                activePlaylist = playlist;
+                UpdateSongs(playlist);
+            }
         }
 
         private void ConfigureMainPanel()
@@ -338,7 +369,7 @@ namespace Vibely_App.View
             };
             mainApp.MainPanel.Controls.Add(songFlowPanel);
 
-            UpdateSongs();
+            UpdateSongs(null);
         }
 
         private void SongControl_OnDelete(object sender, Song songToDelete)
@@ -354,12 +385,24 @@ namespace Vibely_App.View
                 {
                     try
                     {
-                        songBusiness.Remove(songToDelete.Id);
+                        if (activePlaylist == null)
+                        {
+                            songBusiness.Remove(songToDelete.Id);
 
-                        songFlowPanel?.Controls.Remove(controlToDelete);
+                            songFlowPanel?.Controls.Remove(controlToDelete);
 
-                        MessageBox.Show($"Song '{songToDelete.Title}' deleted successfully.", "Deleted", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
+                            MessageBox.Show($"Song '{songToDelete.Title}' deleted successfully.", "Deleted", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                        else
+                        {
+                            var playlistSongBusiness = new PlaylistSongBusiness(new VibelyDbContext());
+                            var playlistSong = playlistSongBusiness.FindByPlaylistAndSong(activePlaylist, songToDelete);
+                            if (playlistSong != null)
+                            {
+                                playlistSongBusiness.Remove(playlistSong.Id);
+                                songFlowPanel?.Controls.Remove(controlToDelete);
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -375,7 +418,64 @@ namespace Vibely_App.View
 
         private void SongControl_OnAddToPlaylist(object sender, Song songToAdd)
         {
-            MessageBox.Show($"Add '{songToAdd.Title}' to playlist functionality not implemented yet.", "Not Implemented", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            // TODO: Replace this with actual playlist fetching logic from your Business layer
+            var userPlaylistBusiness = new UserPlaylistBusiness(new VibelyDbContext());
+            var playlistBusiness = new PlaylistBusiness(new VibelyDbContext());
+            var playlistSongBusiness = new PlaylistSongBusiness(new VibelyDbContext());
+            var playlists = userPlaylistBusiness.GetAll()
+                .Where(p => p.UserId == activeUser.Id)
+                .Select(p => p.Playlist.Title)
+                .ToList();
+
+            ContextMenuStrip playlistMenu = new ContextMenuStrip();
+
+            foreach (var playlistName in playlists)
+            {
+                ToolStripMenuItem playlistItem = new ToolStripMenuItem(playlistName);
+                playlistItem.Tag = playlistName; // Store playlist name for the click event
+                playlistItem.Click += (itemSender, itemArgs) =>
+                {
+                    string selectedPlaylist = ((ToolStripMenuItem)itemSender).Tag.ToString();
+
+                    // TODO: Add the actual logic to add songToAdd to the selectedPlaylist
+                    MessageBox.Show($"Adding '{songToAdd.Title}' to playlist '{selectedPlaylist}'...", "Add to Playlist", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    // Example: Call your business logic here
+                    // var playlistBusiness = new PlaylistBusiness(new VibelyDbContext());
+                    // var playlist = playlistBusiness.FindByName(selectedPlaylist);
+                    // if (playlist != null) {
+                    //     var songPlaylistBusiness = new SongPlaylistBusiness(new VibelyDbContext());
+                    //     songPlaylistBusiness.AddSongToPlaylist(songToAdd.Id, playlist.Id);
+                    // }
+
+                    var playlistToAdd = playlistBusiness.FindByName(selectedPlaylist);
+
+                    if (playlistSongBusiness.FindByPlaylistAndSong(playlistToAdd, songToAdd) != null)
+                    {
+                        MessageBox.Show($"Song '{songToAdd.Title}' is already in playlist '{selectedPlaylist}'.", "Already Added", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        return;
+                    }
+
+                    PlaylistSong ps = new()
+                    {
+                        PlaylistId = playlistToAdd.Id,
+                        SongId = songToAdd.Id
+                    };
+                    
+                    playlistSongBusiness.Add(ps);
+                };
+                playlistMenu.Items.Add(playlistItem);
+            }
+
+            // Show the context menu at the current mouse position
+            if (sender is Control control) // Ensure sender is a control to get position
+            {
+                 playlistMenu.Show(control, control.PointToClient(Cursor.Position));
+            }
+            else // Fallback if sender is not a control (though it should be)
+            {
+                 playlistMenu.Show(Cursor.Position);
+            }
         }
 
         private void ConfigurePlayerPanel()
@@ -568,7 +668,7 @@ namespace Vibely_App.View
         }
 
         //To be used as reference later
-        public void UpdateSongs()
+        public void UpdateSongs(Playlist playlist)
         {
             var mainTableLayout = mainApp.MainPanel.Controls[0] as TableLayoutPanel;
             var songsFlowPanel = mainTableLayout?.GetControlFromPosition(0, 1) as FlowLayoutPanel;
@@ -577,22 +677,17 @@ namespace Vibely_App.View
             {
                 songsFlowPanel.Controls.Clear();
 
-                //var sampleSongs = new[]
-                //{
-                //    new Song { Title = "Bohemian Rhapsody", Duration = 354, User = new User { FirstName = "Queen", LastName = "" }, Genre = new Genre { Name = "Rock" } },
-                //    new Song { Title = "Hotel California", Duration = 391, User = new User { FirstName = "Eagles", LastName = "" }, Genre = new Genre { Name = "Rock" } },
-                //    new Song { Title = "Sweet Dreams", Duration = 216, User = new User { FirstName = "Eurythmics", LastName = "" }, Genre = new Genre { Name = "Pop" } },
-                //    new Song { Title = "Stairway to Heaven", Duration = 482, User = new User { FirstName = "Led Zeppelin", LastName = "" }, Genre = new Genre { Name = "Rock" } },
-                //    new Song { Title = "Billie Jean", Duration = 294, User = new User { FirstName = "Michael", LastName = "Jackson" }, Genre = new Genre { Name = "Pop" } },
-                //    new Song { Title = "Like a Rolling Stone", Duration = 373, User = new User { FirstName = "Bob", LastName = "Dylan" }, Genre = new Genre { Name = "Rock" } },
-                //    new Song { Title = "Imagine", Duration = 183, User = new User { FirstName = "John", LastName = "Lennon" }, Genre = new Genre { Name = "Rock" } },
-                //    new Song { Title = "Purple Rain", Duration = 520, User = new User { FirstName = "Prince", LastName = "" }, Genre = new Genre { Name = "Rock" } },
-                //    new Song { Title = "Respect", Duration = 148, User = new User { FirstName = "Aretha", LastName = "Franklin" }, Genre = new Genre { Name = "Soul" } },
-                //    new Song { Title = "Smells Like Teen Spirit", Duration = 301, User = new User { FirstName = "Nirvana", LastName = "" }, Genre = new Genre { Name = "Rock" } }
-                //};
-
                 var songBusiness = new SongBusiness(new VibelyDbContext());
-                var allSongs = songBusiness.GetAll();
+                List<Song> allSongs;
+                if (playlist == null)
+                {
+                    allSongs = songBusiness.GetAll();
+                }
+                else
+                {
+                    var playlistSongs = new PlaylistSongBusiness(new VibelyDbContext());
+                    allSongs = playlistSongs.GetAllSongsInPlaylist(playlist);
+                }
 
                 foreach (var song in allSongs)
                 {
@@ -601,6 +696,7 @@ namespace Vibely_App.View
                     songControl.Margin = new Padding(0, 0, 0, 10);
                     songControl.Cursor = Cursors.Hand;
                     songControl.OnDelete += SongControl_OnDelete;
+                    songControl.OnAddToPlaylist += SongControl_OnAddToPlaylist;
                     songsFlowPanel.Controls.Add(songControl);
                 }
             }
