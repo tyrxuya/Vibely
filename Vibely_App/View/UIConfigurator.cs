@@ -7,10 +7,13 @@ using Guna.UI2.WinForms;
 using System.Diagnostics;
 using Vibely_App.Business;
 using Vibely_App.Data;
+using System.Linq; // Added for FirstOrDefault
+using System.IO; // For MemoryStream
+using NAudio.Wave; // For NAudio playback
 
 namespace Vibely_App.View
 {
-    public class UIConfigurator
+    public class UIConfigurator : IDisposable
     {
         private const int SIDEBAR_WIDTH = 280;
         private const int PLAYER_HEIGHT = 100;
@@ -20,6 +23,24 @@ namespace Vibely_App.View
         private Playlist activePlaylist;
         private FlowLayoutPanel songFlowPanel;
         private SongBusiness songBusiness;
+
+        // Playback related fields
+        private System.Windows.Forms.Timer playbackTimer;
+        private Song currentPlayingSong;
+        private bool isPlaying = false;
+        private double currentPositionSeconds = 0;
+        private double totalDurationSeconds = 0;
+        private bool isDraggingSlider = false; // Flag to prevent timer updates during manual seek
+
+        // NAudio Playback fields
+        private WaveOutEvent waveOut;
+        private WaveStream audioReader; // Use WaveStream as a base class for different formats
+        private MemoryStream audioStream;
+        private bool disposedValue; // For IDisposable
+        private bool isStoppingForNewSong = false; // Flag to prevent UI reset during song switch
+        private readonly object playbackLock = new object(); // Lock for synchronization
+        private List<Song> currentSongList; // List of currently loaded songs
+        private bool isSkippingTrack = false; // Flag for Next/Prev button clicks
 
         public static bool IsDarkMode { get; set; } = true;
         public static event EventHandler ThemeToggled;
@@ -36,6 +57,8 @@ namespace Vibely_App.View
             this.mainApp = mainApp;
             this.activeUser = activeUser;
             songBusiness = new SongBusiness(new VibelyDbContext());
+            InitializePlaybackTimer(); // Initialize the timer
+            InitializeAudioPlaybackEngine(); // Initialize NAudio engine
         }
 
         public void InitializeUI()
@@ -386,12 +409,12 @@ namespace Vibely_App.View
                     try
                     {
                         if (activePlaylist == null)
-                        {
-                            songBusiness.Remove(songToDelete.Id);
+                    {
+                        songBusiness.Remove(songToDelete.Id);
 
-                            songFlowPanel?.Controls.Remove(controlToDelete);
+                        songFlowPanel?.Controls.Remove(controlToDelete);
 
-                            MessageBox.Show($"Song '{songToDelete.Title}' deleted successfully.", "Deleted", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show($"Song '{songToDelete.Title}' deleted successfully.", "Deleted", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }
                         else
                         {
@@ -614,7 +637,9 @@ namespace Vibely_App.View
             mainApp.BtnNext.Click -= NextButton_Click;
             mainApp.BtnVolume.Click -= VolumeButton_Click;
             mainApp.TrackBarVolume.ValueChanged -= VolumeSlider_ValueChanged;
-            mainApp.TrackBarProgress.ValueChanged -= ProgressBar_ValueChanged;
+            mainApp.TrackBarProgress.MouseDown -= ProgressBar_MouseDown;
+            mainApp.TrackBarProgress.MouseUp -= ProgressBar_MouseUp;
+            mainApp.TrackBarProgress.Scroll -= ProgressBar_Scroll;
 
             // Add the handlers
             mainApp.BtnPlay.Click += PlayButton_Click;
@@ -622,23 +647,24 @@ namespace Vibely_App.View
             mainApp.BtnNext.Click += NextButton_Click;
             mainApp.BtnVolume.Click += VolumeButton_Click;
             mainApp.TrackBarVolume.ValueChanged += VolumeSlider_ValueChanged;
-            mainApp.TrackBarProgress.ValueChanged += ProgressBar_ValueChanged;
+            mainApp.TrackBarProgress.MouseDown += ProgressBar_MouseDown;
+            mainApp.TrackBarProgress.MouseUp += ProgressBar_MouseUp;
+            mainApp.TrackBarProgress.Scroll += ProgressBar_Scroll;
         }
 
         private void PlayButton_Click(object sender, EventArgs e)
         {
-            mainApp.BtnPlay.Text = mainApp.BtnPlay.Text == "▶" ? "⏸" : "▶";
-            // TODO: Add actual play/pause functionality
+            TogglePlayPause();
         }
 
         private void PrevButton_Click(object sender, EventArgs e)
         {
-            // TODO: Add previous track functionality
+            PlayAdjacentSong(-1); // Play previous
         }
 
         private void NextButton_Click(object sender, EventArgs e)
         {
-            // TODO: Add next track functionality
+             PlayAdjacentSong(1); // Play next
         }
 
         private void VolumeButton_Click(object sender, EventArgs e)
@@ -658,48 +684,619 @@ namespace Vibely_App.View
 
         private void VolumeSlider_ValueChanged(object sender, EventArgs e)
         {
-            mainApp.BtnVolume.Text = mainApp.TrackBarVolume.Value == 0 ? "🔈" : "🔊";
-            // TODO: Add actual volume control functionality
+            // Volume setting on waveOut is generally thread-safe, but locking doesn't hurt
+            lock (playbackLock)
+            {
+                if (waveOut != null)
+                {
+                    waveOut.Volume = mainApp.TrackBarVolume.Value / 100f;
+                }
+            }
+            // Update UI (queues to UI thread, safe outside lock)
+            Action updateBtn = () => { if (mainApp?.BtnVolume != null) mainApp.BtnVolume.Text = mainApp.TrackBarVolume.Value == 0 ? "🔈" : "🔊"; };
+            if (mainApp.InvokeRequired) mainApp.Invoke(updateBtn); else updateBtn();
         }
 
-        private void ProgressBar_ValueChanged(object sender, EventArgs e)
+        private void ProgressBar_MouseDown(object sender, MouseEventArgs e)
         {
-            // TODO: Add seek functionality
+            if (currentPlayingSong != null)
+            {
+                isDraggingSlider = true;
+                // Optional: Pause playback while seeking for smoother experience
+                // if (isPlaying) {
+                //    playbackTimer.Stop();
+                // }
+            }
         }
 
-        //To be used as reference later
+        private void ProgressBar_MouseUp(object sender, MouseEventArgs e)
+        {
+            lock (playbackLock)
+            {
+                if (currentPlayingSong != null && audioReader != null && isDraggingSlider)
+                {
+                    try
+                    {
+                        double clickPositionRatio = Math.Max(0, Math.Min(1, (double)e.X / mainApp.TrackBarProgress.Width));
+                        currentPositionSeconds = clickPositionRatio * totalDurationSeconds;
+
+                        audioReader.CurrentTime = TimeSpan.FromSeconds(currentPositionSeconds);
+
+                        // Update UI labels/slider (queue to UI thread, safe outside lock)
+                        Action updateSeekUI = () => {
+                            if (mainApp?.TrackBarProgress != null) mainApp.TrackBarProgress.Value = (int)currentPositionSeconds;
+                            if (mainApp?.LblCurrentTime != null) mainApp.LblCurrentTime.Text = FormatTime(currentPositionSeconds);
+                        };
+                        if (mainApp.InvokeRequired) mainApp.Invoke(updateSeekUI); else updateSeekUI();
+
+                        Debug.WriteLine($"Seeked to: {FormatTime(currentPositionSeconds)}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Error seeking: {ex.Message}");
+                    }
+                }
+            }
+            isDraggingSlider = false; // Reset flag outside lock
+        }
+
+         // Update time label continuously while scrolling if desired
+        private void ProgressBar_Scroll(object sender, EventArgs e)
+        {
+             if (currentPlayingSong != null && isDraggingSlider)
+             {
+                 // Update label based on slider value directly during scroll
+                 mainApp.LblCurrentTime.Text = FormatTime(mainApp.TrackBarProgress.Value);
+             }
+        }
+
+        private void TogglePlayPause()
+        {
+            lock (playbackLock)
+            {
+                if (currentPlayingSong == null || waveOut == null) return;
+
+                if (isPlaying) // Pause
+                {
+                    if (waveOut.PlaybackState == PlaybackState.Playing)
+                    {
+                        try
+                        {
+                            waveOut.Pause();
+                            isPlaying = false;
+                            playbackTimer.Stop();
+                            // Update UI (queues to UI thread, safe outside lock)
+                            Action updateBtn = () => { if (mainApp?.BtnPlay != null) mainApp.BtnPlay.Text = "▶"; };
+                            if (mainApp.InvokeRequired) mainApp.Invoke(updateBtn); else updateBtn();
+                            Debug.WriteLine("Playback Paused");
+                        }
+                        catch (Exception ex) { Debug.WriteLine($"Error pausing: {ex.Message}"); }
+                    }
+                }
+                else // Play (Resume)
+                {
+                    if (waveOut.PlaybackState == PlaybackState.Paused)
+                    {
+                        try
+                        {
+                            waveOut.Play();
+                            isPlaying = true;
+                            playbackTimer.Start();
+                            // Update UI (queues to UI thread, safe outside lock)
+                            Action updateBtn = () => { if (mainApp?.BtnPlay != null) mainApp.BtnPlay.Text = "⏸"; };
+                            if (mainApp.InvokeRequired) mainApp.Invoke(updateBtn); else updateBtn();
+                            Debug.WriteLine("Playback Resumed");
+                        }
+                        catch (Exception ex) { Debug.WriteLine($"Error resuming: {ex.Message}"); }
+                    }
+                    // Potentially handle case where state is Stopped (e.g., error occurred) - maybe replay?
+                }
+            }
+        }
+
+        private void PlaybackTimer_Tick(object sender, EventArgs e)
+        {
+            if (isPlaying && !isDraggingSlider && currentPlayingSong != null && audioReader != null)
+            {
+                // Update position from the audio reader's current time
+                currentPositionSeconds = audioReader.CurrentTime.TotalSeconds;
+
+                // NAudio's PlaybackStopped event handles the end of the song more reliably
+                // if (currentPositionSeconds >= totalDurationSeconds)
+                // {
+                //     StopPlaybackInternally(); // Use internal stop which doesn't reset UI fully yet
+                // }
+                // else
+                // {
+                     UpdatePlaybackUI();
+                // }
+            }
+        }
+
+        private void UpdatePlaybackUI()
+        {
+             if (mainApp.InvokeRequired)
+             {
+                 mainApp.Invoke(new Action(UpdatePlaybackUI));
+                 return;
+             }
+
+            if (currentPlayingSong != null)
+            {
+                // Update Progress Bar based on audioReader's position
+                totalDurationSeconds = audioReader?.TotalTime.TotalSeconds ?? totalDurationSeconds; // Update total duration if reader provides it
+                int maxProgress = (int)Math.Max(1, totalDurationSeconds); // Ensure max is at least 1
+                if (mainApp.TrackBarProgress.Maximum != maxProgress) {
+                    mainApp.TrackBarProgress.Maximum = maxProgress;
+                }
+                int progressValue = (int)Math.Min(currentPositionSeconds, maxProgress);
+                if (progressValue >= mainApp.TrackBarProgress.Minimum && progressValue <= maxProgress)
+                {
+                    mainApp.TrackBarProgress.Value = progressValue;
+                }
+
+                // Update Current Time Label
+                mainApp.LblCurrentTime.Text = FormatTime(currentPositionSeconds);
+                // Update Total Time Label (might change if reader loaded duration)
+                mainApp.LblTotalTime.Text = FormatTime(totalDurationSeconds);
+            }
+        }
+
+        private void PlaySong(Song song)
+        {
+            lock (playbackLock) // Lock before modifying playback state
+            {
+                isStoppingForNewSong = true; // Set flag: Stop is for loading new song
+                StopPlaybackInternally(); // This call is now within the lock
+                isStoppingForNewSong = false; // Reset flag
+
+                if (song?.Data == null || song.Data.Length == 0)
+                {
+                    MessageBox.Show("Song data is missing or empty.", "Playback Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    ResetPlaybackUI(); // Just ensure UI is reset (safe outside lock as it queues to UI thread)
+                    return;
+                }
+
+                currentPlayingSong = song;
+                currentPositionSeconds = 0;
+                isDraggingSlider = false;
+
+                try
+                {
+                    audioStream = new MemoryStream(song.Data);
+                    audioReader = CreateWaveStream(audioStream); // Format detection doesn't need lock
+
+                    if (audioReader == null)
+                    {
+                        MessageBox.Show("Could not recognize audio format.", "Playback Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                         ResetPlaybackUI(); // Safe outside lock
+                        return;
+                    }
+
+                    totalDurationSeconds = audioReader.TotalTime.TotalSeconds;
+
+                    // Update UI with new song info (queues to UI thread, safe outside lock)
+                    if (mainApp.InvokeRequired)
+                    { mainApp.Invoke(new Action(UpdateUIAfterSongLoad)); }
+                    else
+                    { UpdateUIAfterSongLoad(); }
+
+                    // Initialize and Play within the lock
+                    if (waveOut == null) { InitializeAudioPlaybackEngine(); } // Re-initialize if disposed
+                    waveOut.Init(audioReader);
+                    waveOut.Play();
+                    isPlaying = true; // Set playing state *after* successful start
+                    playbackTimer.Start(); // Timer start/stop is thread-safe
+                    // Update button state (queues to UI thread, safe outside lock)
+                    Action updateBtn = () => { if (mainApp?.BtnPlay != null) mainApp.BtnPlay.Text = "⏸"; };
+                     if (mainApp.InvokeRequired) mainApp.Invoke(updateBtn); else updateBtn();
+
+                    Debug.WriteLine($"Playing: {song.Title} (Format: {audioReader.GetType().Name})");
+                }
+                catch (Exception ex)
+                {
+                     Debug.WriteLine($"NAudio Playback Error in PlaySong: {ex}");
+                    // Show error message (queues to UI thread, safe outside lock)
+                     Action showError = () => MessageBox.Show($"Error playing song: {ex.Message}", "Playback Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                     if (mainApp.InvokeRequired) mainApp.Invoke(showError); else showError();
+
+                    StopPlaybackInternally(); // Clean up within the lock
+                    ResetPlaybackUI(); // Reset UI (safe outside lock)
+                }
+            } // End Lock
+        }
+
+        // Helper to update UI elements after song loaded and reader created
+        private void UpdateUIAfterSongLoad()
+        {
+             mainApp.LblCurrentSong.Text = currentPlayingSong.Title ?? "Unknown Title";
+             mainApp.LblCurrentArtist.Text = currentPlayingSong.Artist ?? "Unknown Artist";
+             mainApp.LblTotalTime.Text = FormatTime(totalDurationSeconds);
+             mainApp.LblCurrentTime.Text = FormatTime(currentPositionSeconds);
+             mainApp.TrackBarProgress.Minimum = 0;
+             int maxProgress = (int)Math.Max(1, totalDurationSeconds); // Ensure max is at least 1
+             mainApp.TrackBarProgress.Maximum = maxProgress;
+             mainApp.TrackBarProgress.Value = 0;
+        }
+
+        // --- Format Detection Logic ---
+        private WaveStream CreateWaveStream(MemoryStream stream)
+        {
+            stream.Position = 0; // Ensure we read from the beginning
+
+            // Try reading as WAV
+            try
+            {
+                var reader = new WaveFileReader(stream);
+                if (reader.WaveFormat != null) // Basic check
+                {
+                    Debug.WriteLine("Detected WAV format.");
+                    stream.Position = 0; // Reset position for the reader
+                    return reader;
+                }
+            }
+            catch (Exception ex) { Debug.WriteLine($"Not WAV: {ex.Message}"); /* Ignore */ }
+
+            stream.Position = 0; // Reset position
+
+            // Try reading as MP3
+            try
+            {
+                var reader = new Mp3FileReader(stream);
+                if (reader.WaveFormat != null) // Basic check
+                {
+                    Debug.WriteLine("Detected MP3 format.");
+                    stream.Position = 0; // Reset position for the reader
+                    return reader;
+                }
+            }
+            catch (Exception ex) { Debug.WriteLine($"Not MP3: {ex.Message}"); /* Ignore */ }
+
+            // Add checks for other formats here if needed (e.g., AiffFileReader, WmaFileReader)
+
+            // If no format detected, return null
+            stream.Position = 0; // Reset position
+            return null;
+        }
+        // -----------------------------
+
+        // Internal stop to release resources without fully resetting UI immediately
+        private void StopPlaybackInternally()
+        {
+            // Assumes already within lock(playbackLock)
+            playbackTimer.Stop();
+            isPlaying = false;
+
+            if (waveOut != null && waveOut.PlaybackState != PlaybackState.Stopped)
+            {
+                 try { waveOut.Stop(); } catch (Exception ex) { Debug.WriteLine($"Error stopping waveOut: {ex.Message}"); }
+            }
+
+            audioReader?.Dispose();
+            audioReader = null;
+            audioStream?.Dispose();
+            audioStream = null;
+
+            Debug.WriteLine("Internal Playback Stop");
+        }
+
+        // This method acquires the lock itself
+        private void StopPlayback()
+        {
+            lock (playbackLock)
+            {
+                isStoppingForNewSong = true;
+                StopPlaybackInternally(); // Call the internal stop *within* the lock
+                isStoppingForNewSong = false;
+            }
+            // Reset UI outside the lock (queues to UI thread)
+            if (mainApp.InvokeRequired) { mainApp.Invoke(new Action(ResetPlaybackUI)); }
+            else { ResetPlaybackUI(); }
+            Debug.WriteLine("Full Playback Stop and UI Reset");
+        }
+
+        private void ResetPlaybackUI()
+        {
+            // Add null checks for UI elements before accessing them
+            if (mainApp?.BtnPlay != null) mainApp.BtnPlay.Text = "▶";
+            if (mainApp?.TrackBarProgress != null) mainApp.TrackBarProgress.Value = mainApp.TrackBarProgress.Minimum;
+            if (mainApp?.LblCurrentTime != null) mainApp.LblCurrentTime.Text = FormatTime(0);
+            // Resetting other labels is optional
+            // if (mainApp?.LblCurrentSong != null) mainApp.LblCurrentSong.Text = "No song playing";
+            // if (mainApp?.LblCurrentArtist != null) mainApp.LblCurrentArtist.Text = "Unknown Artist";
+            // if (mainApp?.LblTotalTime != null) mainApp.LblTotalTime.Text = FormatTime(0);
+        }
+
+        private void OnPlaybackStopped(object sender, StoppedEventArgs args)
+        {
+             // This event handler runs outside our lock, so we should avoid
+             // modifying shared state directly here if possible, or re-acquire the lock.
+             // For now, we focus on safe disposal and UI updates (which are queued).
+
+            Debug.WriteLine("Playback Stopped Event Received");
+
+            // Resource disposal - these are already nulled out in StopPlaybackInternally
+            // which should have been called under lock before this event fires, but safe checks are ok.
+            // WaveStream localReader = audioReader; // Avoid racing with null assignment? Maybe not needed with lock.
+            // MemoryStream localStream = audioStream;
+            // localReader?.Dispose();
+            // localStream?.Dispose();
+
+            Exception playbackException = args?.Exception;
+            bool resetUi = false;
+            bool playNext = false; // Default to not autoplaying
+            string reason = "unknown";
+
+            // Determine reason and action based on flags checked under lock
+            lock (playbackLock)
+            {
+                if (playbackException != null) {
+                    resetUi = true;
+                    playNext = false;
+                    reason = "playback error";
+                }
+                else if (isStoppingForNewSong) { // Stopped for user clicking a specific song
+                    resetUi = false;
+                    playNext = false;
+                    reason = "switching songs";
+                }
+                else if (isSkippingTrack) { // Stopped because Next/Prev was clicked
+                     resetUi = false; // Let the new song's PlaySong call handle UI updates
+                     playNext = false;
+                     reason = "track skipped";
+                     // NOTE: isSkippingTrack flag is reset in PlayAdjacentSong
+                }
+                else { // Assume natural stop if none of the above
+                    resetUi = true;
+                    playNext = true;
+                    reason = "natural stop";
+                }
+            }
+
+            Debug.WriteLine($"OnPlaybackStopped: Reason='{reason}', NeedsReset={resetUi}, NeedsAutoplay={playNext}, IsPlaying={isPlaying}");
+
+            if (playbackException != null)
+            {
+                // Show error message (queues to UI thread, safe outside lock)
+                Action showError = () => {
+                     if (mainApp != null) {
+                          MessageBox.Show(mainApp, $"Playback error: {playbackException.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                     }
+                };
+                if (mainApp != null && mainApp.InvokeRequired) { mainApp.Invoke(showError); } else { showError(); }
+            }
+
+            // Sanity Check: If reset/autoplay seems needed, but playback is already active again,
+            // skip to prevent race conditions (should be less likely now, but keep for safety).
+            if ((resetUi || playNext) && isPlaying)
+            {
+                 Debug.WriteLine("OnPlaybackStopped: Action needed but isPlaying is true. Race condition averted. Skipping UI reset/autoplay.");
+                 resetUi = false;
+                 playNext = false;
+            }
+
+            // Reset UI if needed
+            if (resetUi)
+            {
+                 Debug.WriteLine($"OnPlaybackStopped: Resetting UI due to {reason}.");
+                 Action resetAction = ResetPlaybackUI;
+                 if (mainApp != null && mainApp.InvokeRequired) { mainApp.Invoke(resetAction); }
+                 else if (mainApp != null) { resetAction(); }
+            }
+            else
+            {
+                 Debug.WriteLine($"OnPlaybackStopped: Skipping UI reset (Reason: {reason}, IsPlaying: {isPlaying}).");
+            }
+
+            // Trigger Autoplay if needed
+            if (playNext)
+            {
+                Debug.WriteLine("OnPlaybackStopped: Natural end detected, playing next song.");
+                mainApp?.BeginInvoke(new Action(() => PlayAdjacentSong(1)));
+            }
+        }
+
+        // Helper to format time from seconds to m:ss
+        private string FormatTime(double totalSeconds)
+        {
+            TimeSpan time = TimeSpan.FromSeconds(totalSeconds);
+            return $"{(int)time.TotalMinutes}:{time.Seconds:D2}";
+        }
+
         public void UpdateSongs(Playlist playlist)
         {
-            var mainTableLayout = mainApp.MainPanel.Controls[0] as TableLayoutPanel;
+            var mainTableLayout = mainApp.MainPanel.Controls.OfType<TableLayoutPanel>().FirstOrDefault();
             var songsFlowPanel = mainTableLayout?.GetControlFromPosition(0, 1) as FlowLayoutPanel;
 
             if (songsFlowPanel != null)
             {
+                // Dispose existing controls to free resources and remove handlers
+                 foreach (Control ctrl in songsFlowPanel.Controls)
+                 {
+                    if (ctrl is SongControl sc)
+                    {
+                         // Unsubscribe events before disposing
+                         sc.Click -= SongControl_Click; // New click handler for playing
+                         sc.OnDelete -= SongControl_OnDelete;
+                         sc.OnAddToPlaylist -= SongControl_OnAddToPlaylist;
+                    }
+                     ctrl.Dispose();
+                 }
                 songsFlowPanel.Controls.Clear();
 
+                // Get the list of songs
                 var songBusiness = new SongBusiness(new VibelyDbContext());
-                List<Song> allSongs;
+                List<Song> songsToDisplay;
                 if (playlist == null)
                 {
-                    allSongs = songBusiness.GetAll();
+                    songsToDisplay = songBusiness.GetAll();
                 }
                 else
                 {
                     var playlistSongs = new PlaylistSongBusiness(new VibelyDbContext());
-                    allSongs = playlistSongs.GetAllSongsInPlaylist(playlist);
+                    songsToDisplay = playlistSongs.GetAllSongsInPlaylist(playlist);
                 }
 
-                foreach (var song in allSongs)
+                // --- Store the current list --- 
+                lock(playbackLock) // Lock when updating the list used by playback controls
+                {
+                     currentSongList = songsToDisplay;
+                }
+                // -----------------------------
+
+                if (songsToDisplay != null)
+                {
+                     foreach (var song in songsToDisplay)
                 {
                     var songControl = new SongControl(song);
-                    songControl.Width = songsFlowPanel.Width - 40;
+                         songControl.Width = songsFlowPanel.ClientSize.Width - songControl.Margin.Horizontal; // Initial width
                     songControl.Margin = new Padding(0, 0, 0, 10);
                     songControl.Cursor = Cursors.Hand;
+
+                         // --- Attach Event Handlers ---
+                         songControl.Click += SongControl_Click; // Play song on click
                     songControl.OnDelete += SongControl_OnDelete;
                     songControl.OnAddToPlaylist += SongControl_OnAddToPlaylist;
+                         // ---------------------------
+
                     songsFlowPanel.Controls.Add(songControl);
                 }
             }
+
+                 // Adjust width of controls after adding them if FlowLayoutPanel width changes
+                 songsFlowPanel.SizeChanged -= SongFlowPanel_SizeChanged; // Remove previous handler
+                 songsFlowPanel.SizeChanged += SongFlowPanel_SizeChanged; // Add new handler
+            }
         }
+
+        // Handler for resizing song controls within the flow panel
+        private void SongFlowPanel_SizeChanged(object sender, EventArgs e)
+        {
+             if(sender is FlowLayoutPanel panel)
+             {
+                  foreach(SongControl sc in panel.Controls.OfType<SongControl>())
+                  {
+                     try { sc.Width = panel.ClientSize.Width - sc.Margin.Horizontal; }
+                     catch { /* Ignore potential errors during resize storms */ }
+                  }
+             }
+        }
+
+        // --- New handler for playing song on click ---
+        private void SongControl_Click(object sender, EventArgs e)
+        {
+            if (sender is SongControl songControl && songControl.Song != null)
+            {
+                PlaySong(songControl.Song);
+            }
+        }
+        // ------------------------------------------
+
+        private void InitializePlaybackTimer()
+        {
+            playbackTimer = new System.Windows.Forms.Timer();
+            playbackTimer.Interval = 1000; // 1 second interval
+            playbackTimer.Tick += PlaybackTimer_Tick;
+        }
+
+        private void InitializeAudioPlaybackEngine()
+        {
+            waveOut = new WaveOutEvent();
+            waveOut.PlaybackStopped += OnPlaybackStopped;
+            // Set initial volume from the UI slider
+            VolumeSlider_ValueChanged(null, EventArgs.Empty);
+        }
+
+        private void PlayAdjacentSong(int direction) // direction: 1 for next, -1 for previous
+        {
+            lock (playbackLock)
+            {
+                if (currentSongList == null || currentSongList.Count == 0 || currentPlayingSong == null)
+                {
+                    Debug.WriteLine("Cannot play next/prev: No song list or current song.");
+                    return;
+                }
+
+                int currentIndex = currentSongList.FindIndex(s => s.Id == currentPlayingSong.Id);
+                if (currentIndex == -1)
+        {
+                    Debug.WriteLine("Cannot play next/prev: Current song not found in list.");
+                    return; // Current song isn't in the list for some reason
+                }
+
+                int nextIndex = currentIndex + direction;
+
+                // Handle wrap-around
+                if (nextIndex < 0)
+                {
+                    nextIndex = currentSongList.Count - 1; // Wrap to last song
+                }
+                else if (nextIndex >= currentSongList.Count)
+                {
+                    nextIndex = 0; // Wrap to first song
+                }
+
+                if (nextIndex >= 0 && nextIndex < currentSongList.Count)
+                {
+                     Song nextSong = currentSongList[nextIndex];
+                     Debug.WriteLine($"Playing {(direction > 0 ? "next" : "previous")} song: {nextSong.Title}");
+
+                     isSkippingTrack = true; // Set flag BEFORE calling PlaySong
+                     try
+                     {
+                         PlaySong(nextSong);
+                     }
+                     finally
+                     {
+                         // Ensure flag is reset even if PlaySong throws an error
+                         // although PlaySong should handle its own cleanup
+                         isSkippingTrack = false;
+                     }
+                }
+                 else { /* ... error handling ... */ }
+            }
+        }
+
+        // --- IDisposable Implementation ---
+        protected virtual void Dispose(bool disposing)
+        {
+             lock (playbackLock) // Ensure disposal is synchronized
+             {
+                 if (!disposedValue)
+                 {
+                     if (disposing)
+                     {
+                         StopPlaybackInternally(); // Clean up streams/reader within lock
+                         if (waveOut != null)
+                         {
+                             waveOut.PlaybackStopped -= OnPlaybackStopped;
+                             waveOut.Dispose();
+                             waveOut = null;
+                         }
+                         if (playbackTimer != null)
+                         { // Timer disposal is safe outside lock if needed, but fine here
+                             playbackTimer.Dispose();
+                             playbackTimer = null;
+                         }
+                     }
+                     disposedValue = true;
+                 }
+             }
+        }
+
+        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+        // ~UIConfigurator()
+        // {
+        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        //     Dispose(disposing: false);
+        // }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+        // ----------------------------------
     }
 }
