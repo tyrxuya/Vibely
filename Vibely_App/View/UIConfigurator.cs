@@ -17,6 +17,8 @@ namespace Vibely_App.View
 
         private readonly MainApp mainApp;
         private readonly User activeUser;
+        private FlowLayoutPanel songFlowPanel;
+        private SongBusiness songBusiness;
 
         public static bool IsDarkMode { get; set; } = true;
         public static event EventHandler ThemeToggled;
@@ -32,6 +34,7 @@ namespace Vibely_App.View
         {
             this.mainApp = mainApp;
             this.activeUser = activeUser;
+            songBusiness = new SongBusiness(new VibelyDbContext());
         }
 
         public void InitializeUI()
@@ -43,7 +46,7 @@ namespace Vibely_App.View
             ConfigureSidePanel();
             ConfigureMainPanel();
             ConfigurePlayerPanel();
-            UpdateSongs();
+            SetupMainContent();
         }
 
         private void ConfigureSidePanel()
@@ -255,10 +258,10 @@ namespace Vibely_App.View
             mainTableLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
 
             var searchPanel = ConfigureSearchPanel();
-            var songsFlowPanel = ConfigureSongsPanel();
+            SetupMainContent();
 
             mainTableLayout.Controls.Add(searchPanel, 0, 0);
-            mainTableLayout.Controls.Add(songsFlowPanel, 0, 1);
+            mainTableLayout.Controls.Add(songFlowPanel, 0, 1);
 
             mainApp.MainPanel.Controls.Clear();
             mainApp.MainPanel.Controls.Add(mainTableLayout);
@@ -323,17 +326,56 @@ namespace Vibely_App.View
             return searchPanel;
         }
 
-        private FlowLayoutPanel ConfigureSongsPanel()
+        private void SetupMainContent()
         {
-            return new FlowLayoutPanel
+            songFlowPanel = new FlowLayoutPanel
             {
                 Dock = DockStyle.Fill,
-                FlowDirection = FlowDirection.TopDown,
-                WrapContents = false,
                 AutoScroll = true,
-                BackColor = Color.Transparent,
-                Padding = new Padding(0)
+                Padding = new Padding(20),
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false
             };
+            mainApp.MainPanel.Controls.Add(songFlowPanel);
+
+            UpdateSongs();
+        }
+
+        private void SongControl_OnDelete(object sender, Song songToDelete)
+        {
+            if (sender is SongControl controlToDelete)
+            {
+                var confirmResult = MessageBox.Show($"Are you sure you want to delete '{songToDelete.Title}'?",
+                                                     "Confirm Deletion",
+                                                     MessageBoxButtons.YesNo,
+                                                     MessageBoxIcon.Warning);
+
+                if (confirmResult == DialogResult.Yes)
+                {
+                    try
+                    {
+                        songBusiness.Remove(songToDelete.Id);
+
+                        songFlowPanel?.Controls.Remove(controlToDelete);
+
+                        MessageBox.Show($"Song '{songToDelete.Title}' deleted successfully.", "Deleted", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error deleting song: {ex.Message}", "Deletion Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    finally
+                    {
+                        controlToDelete.Dispose();
+                    }
+                }
+            }
+        }
+
+        private void SongControl_OnAddToPlaylist(object sender, Song songToAdd)
+        {
+            MessageBox.Show($"Add '{songToAdd.Title}' to playlist functionality not implemented yet.", "Not Implemented", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void ConfigurePlayerPanel()
@@ -558,6 +600,7 @@ namespace Vibely_App.View
                     songControl.Width = songsFlowPanel.Width - 40;
                     songControl.Margin = new Padding(0, 0, 0, 10);
                     songControl.Cursor = Cursors.Hand;
+                    songControl.OnDelete += SongControl_OnDelete;
                     songsFlowPanel.Controls.Add(songControl);
                 }
             }
