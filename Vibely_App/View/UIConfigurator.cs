@@ -41,6 +41,8 @@ namespace Vibely_App.View
         private readonly object playbackLock = new object(); // Lock for synchronization
         private List<Song> currentSongList; // List of currently loaded songs
         private bool isSkippingTrack = false; // Flag for Next/Prev button clicks
+        private System.Windows.Forms.Timer searchDebounceTimer; // Timer for dynamic search
+        private const int SEARCH_DEBOUNCE_INTERVAL_MS = 300; // Delay in ms after typing stops
 
         public static bool IsDarkMode { get; set; } = true;
         public static event EventHandler ThemeToggled;
@@ -59,6 +61,7 @@ namespace Vibely_App.View
             songBusiness = new SongBusiness(new VibelyDbContext());
             InitializePlaybackTimer(); // Initialize the timer
             InitializeAudioPlaybackEngine(); // Initialize NAudio engine
+            InitializeSearchDebounceTimer(); // Initialize the search timer
         }
 
         public void InitializeUI()
@@ -377,8 +380,82 @@ namespace Vibely_App.View
             searchPanel.Layout += (s, e) => CenterSearchControls();
             mainApp.Resize += (s, e) => CenterSearchControls();
 
+            // --- Update Search Event Handlers ---
+            // Keep button click as an option
+            mainApp.BtnSearch.Click -= SearchButton_Click;
+            mainApp.BtnSearch.Click += SearchButton_Click;
+
+            // Add TextChanged handler for dynamic search
+            mainApp.TxtSearch.TextChanged -= TxtSearch_TextChanged; // Remove previous if any
+            mainApp.TxtSearch.TextChanged += TxtSearch_TextChanged;
+            // ---------------------------------
+
             return searchPanel;
         }
+
+        // --- Dynamic Search TextChanged Handler ---
+        private void TxtSearch_TextChanged(object sender, EventArgs e)
+        {
+            // Restart the debounce timer every time the text changes
+            searchDebounceTimer.Stop();
+            searchDebounceTimer.Start();
+        }
+        // ----------------------------------------
+
+        // --- Timer Tick Handler for Debounced Search ---
+        private void SearchDebounceTimer_Tick(object sender, EventArgs e)
+        {
+            // Timer has ticked, meaning user paused typing
+            searchDebounceTimer.Stop(); // Stop the timer
+            PerformSearch(); // Perform the actual search
+        }
+        // ----------------------------------------------
+
+        // Keep SearchButton_Click to allow explicit search
+        private void SearchButton_Click(object sender, EventArgs e)
+        {
+            searchDebounceTimer.Stop(); // Stop timer if running
+            PerformSearch();
+        }
+
+        // --- Search Logic ---
+        private void PerformSearch()
+        {
+            string searchText = mainApp.TxtSearch.Text.Trim();
+            Debug.WriteLine($"Performing search for: '{searchText}'");
+
+            List<Song> baseSongList;
+            lock (playbackLock) // Access activePlaylist safely
+            {
+                 // Get the base list depending on the currently selected playlist
+                 if (activePlaylist == null) // "All songs" selected
+                 {
+                     baseSongList = songBusiness.GetAll();
+                 }
+                 else
+                 {
+                     var playlistSongs = new PlaylistSongBusiness(new VibelyDbContext());
+                     baseSongList = playlistSongs.GetAllSongsInPlaylist(activePlaylist);
+                 }
+            }
+
+             List<Song> filteredSongs;
+             if (string.IsNullOrWhiteSpace(searchText))
+             {
+                 filteredSongs = baseSongList; // No search text, show all from current view
+             }
+             else
+             {
+                 filteredSongs = baseSongList
+                     .Where(s => (s.Title != null && s.Title.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                                 (s.Artist != null && s.Artist.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0))
+                     .ToList();
+             }
+
+             Debug.WriteLine($"Search found {filteredSongs.Count} songs.");
+             DisplaySongs(filteredSongs); // Update the UI with filtered results
+        }
+        // ------------------
 
         private void SetupMainContent()
         {
@@ -1103,70 +1180,99 @@ namespace Vibely_App.View
             return $"{(int)time.TotalMinutes}:{time.Seconds:D2}";
         }
 
-        public void UpdateSongs(Playlist playlist)
+        // --- Refactored Song Display Logic ---
+        private void DisplaySongs(List<Song> songsToDisplay)
         {
             var mainTableLayout = mainApp.MainPanel.Controls.OfType<TableLayoutPanel>().FirstOrDefault();
             var songsFlowPanel = mainTableLayout?.GetControlFromPosition(0, 1) as FlowLayoutPanel;
 
-            if (songsFlowPanel != null)
+            if (songsFlowPanel == null) return;
+
+            // --- Store the current list for playback controls --- 
+            lock (playbackLock) // Lock when updating the list used by playback controls
             {
-                // Dispose existing controls to free resources and remove handlers
-                 foreach (Control ctrl in songsFlowPanel.Controls)
-                 {
-                    if (ctrl is SongControl sc)
+                currentSongList = songsToDisplay ?? new List<Song>(); // Ensure not null
+            }
+            // --------------------------------------------------
+
+            // --- Clear Panel and Dispose Controls ---
+            songsFlowPanel.SuspendLayout(); // Suspend layout for performance
+            // Remove SizeChanged handler temporarily to avoid issues during clear
+            songsFlowPanel.SizeChanged -= SongFlowPanel_SizeChanged;
+
+            // Dispose existing controls properly
+            while (songsFlowPanel.Controls.Count > 0)
+            {
+                Control ctrl = songsFlowPanel.Controls[0];
+                if (ctrl is SongControl sc)
+                {
+                    sc.Click -= SongControl_Click;
+                    sc.OnDelete -= SongControl_OnDelete;
+                    sc.OnAddToPlaylist -= SongControl_OnAddToPlaylist;
+                }
+                songsFlowPanel.Controls.RemoveAt(0); // Remove before disposing
+                ctrl.Dispose();
+            }
+            // songsFlowPanel.Controls.Clear(); // Should be empty now
+            // ---------------------------------------
+
+            // --- Add New Controls ---
+            if (songsToDisplay != null)
+            {
+                foreach (var song in songsToDisplay)
+                {
+                    try
                     {
-                         // Unsubscribe events before disposing
-                         sc.Click -= SongControl_Click; // New click handler for playing
-                         sc.OnDelete -= SongControl_OnDelete;
-                         sc.OnAddToPlaylist -= SongControl_OnAddToPlaylist;
-                    }
-                     ctrl.Dispose();
-                 }
-                songsFlowPanel.Controls.Clear();
-
-                // Get the list of songs
-                var songBusiness = new SongBusiness(new VibelyDbContext());
-                List<Song> songsToDisplay;
-                if (playlist == null)
-                {
-                    songsToDisplay = songBusiness.GetAll();
-                }
-                else
-                {
-                    var playlistSongs = new PlaylistSongBusiness(new VibelyDbContext());
-                    songsToDisplay = playlistSongs.GetAllSongsInPlaylist(playlist);
-                }
-
-                // --- Store the current list --- 
-                lock(playbackLock) // Lock when updating the list used by playback controls
-                {
-                     currentSongList = songsToDisplay;
-                }
-                // -----------------------------
-
-                if (songsToDisplay != null)
-                {
-                     foreach (var song in songsToDisplay)
-                {
-                    var songControl = new SongControl(song);
+                         var songControl = new SongControl(song);
                          songControl.Width = songsFlowPanel.ClientSize.Width - songControl.Margin.Horizontal; // Initial width
-                    songControl.Margin = new Padding(0, 0, 0, 10);
-                    songControl.Cursor = Cursors.Hand;
+                         songControl.Margin = new Padding(0, 0, 0, 10);
+                         songControl.Cursor = Cursors.Hand;
 
-                         // --- Attach Event Handlers ---
-                         songControl.Click += SongControl_Click; // Play song on click
-                    songControl.OnDelete += SongControl_OnDelete;
-                    songControl.OnAddToPlaylist += SongControl_OnAddToPlaylist;
-                         // ---------------------------
+                         songControl.Click += SongControl_Click;
+                         songControl.OnDelete += SongControl_OnDelete;
+                         songControl.OnAddToPlaylist += SongControl_OnAddToPlaylist;
 
-                    songsFlowPanel.Controls.Add(songControl);
+                         songsFlowPanel.Controls.Add(songControl);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Error creating SongControl for {song?.Title}: {ex.Message}");
+                        // Optionally show an error or skip the song
+                    }
                 }
             }
+            // -----------------------
 
-                 // Adjust width of controls after adding them if FlowLayoutPanel width changes
-                 songsFlowPanel.SizeChanged -= SongFlowPanel_SizeChanged; // Remove previous handler
-                 songsFlowPanel.SizeChanged += SongFlowPanel_SizeChanged; // Add new handler
+            // Re-attach SizeChanged handler and resume layout
+            songsFlowPanel.SizeChanged += SongFlowPanel_SizeChanged;
+            songsFlowPanel.ResumeLayout(true);
+            // Force layout update if needed
+            // songsFlowPanel.PerformLayout();
+             // Scroll to top after updating
+             songsFlowPanel.ScrollControlIntoView(songsFlowPanel.Controls.Count > 0 ? songsFlowPanel.Controls[0] : songsFlowPanel);
+        }
+        // ------------------------------------
+
+        // UpdateSongs now just gets the list and calls DisplaySongs
+        public void UpdateSongs(Playlist playlist)
+        {
+            List<Song> songsToDisplay;
+            var songBusiness = new SongBusiness(new VibelyDbContext());
+
+            if (playlist == null)
+            {
+                songsToDisplay = songBusiness.GetAll();
             }
+            else
+            {
+                var playlistSongs = new PlaylistSongBusiness(new VibelyDbContext());
+                songsToDisplay = playlistSongs.GetAllSongsInPlaylist(playlist);
+            }
+
+            // Clear search box when changing playlists
+            if(mainApp != null) mainApp.TxtSearch.Text = "";
+
+            DisplaySongs(songsToDisplay);
         }
 
         // Handler for resizing song controls within the flow panel
@@ -1205,6 +1311,14 @@ namespace Vibely_App.View
             waveOut.PlaybackStopped += OnPlaybackStopped;
             // Set initial volume from the UI slider
             VolumeSlider_ValueChanged(null, EventArgs.Empty);
+        }
+
+        private void InitializeSearchDebounceTimer()
+        {
+            searchDebounceTimer = new System.Windows.Forms.Timer();
+            searchDebounceTimer.Interval = SEARCH_DEBOUNCE_INTERVAL_MS;
+            searchDebounceTimer.Tick += SearchDebounceTimer_Tick;
+            // No need to start it here, it starts on text change
         }
 
         private void PlayAdjacentSong(int direction) // direction: 1 for next, -1 for previous
@@ -1277,6 +1391,15 @@ namespace Vibely_App.View
                          { // Timer disposal is safe outside lock if needed, but fine here
                              playbackTimer.Dispose();
                              playbackTimer = null;
+                         }
+
+                         // Dispose search timer
+                         if (searchDebounceTimer != null)
+                         {
+                             searchDebounceTimer.Stop(); // Ensure stopped
+                             searchDebounceTimer.Tick -= SearchDebounceTimer_Tick;
+                             searchDebounceTimer.Dispose();
+                             searchDebounceTimer = null;
                          }
                      }
                      disposedValue = true;
