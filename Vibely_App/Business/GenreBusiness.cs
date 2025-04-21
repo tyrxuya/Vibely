@@ -35,11 +35,11 @@ namespace Vibely_App.Business
                 .FirstOrDefault(g => g.Id == id);
         }
 
-        //public Genre? Find(Genre genre)
-        //{
-        //    return _dbContext.Genres
-        //        .Where(g => g.Name == genre.Name).FirstOrDefault();
-        //}
+        public Genre? FindByName(string genre)
+        {
+            return _dbContext.Genres
+                .Where(g => g.Name == genre).FirstOrDefault();
+        }
 
         public void Remove(int id)
         {

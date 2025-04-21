@@ -22,6 +22,11 @@ namespace Vibely_App.Data.Models
         public string Title { get; set; }
 
         [Required]
+        [StringLength(64)]
+        [Column("artist")]
+        public string Artist { get; set; }
+
+        [Required]
         [Column("duration")]
         public int Duration { get; set; }
 

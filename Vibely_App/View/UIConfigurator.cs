@@ -17,6 +17,8 @@ namespace Vibely_App.View
 
         private readonly MainApp mainApp;
         private readonly User activeUser;
+        private FlowLayoutPanel songFlowPanel;
+        private SongBusiness songBusiness;
 
         public static bool IsDarkMode { get; set; } = true;
         public static event EventHandler ThemeToggled;
@@ -32,6 +34,7 @@ namespace Vibely_App.View
         {
             this.mainApp = mainApp;
             this.activeUser = activeUser;
+            songBusiness = new SongBusiness(new VibelyDbContext());
         }
 
         public void InitializeUI()
@@ -43,7 +46,7 @@ namespace Vibely_App.View
             ConfigureSidePanel();
             ConfigureMainPanel();
             ConfigurePlayerPanel();
-            PopulateWithSampleData();
+            SetupMainContent();
         }
 
         private void ConfigureSidePanel()
@@ -255,10 +258,10 @@ namespace Vibely_App.View
             mainTableLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
 
             var searchPanel = ConfigureSearchPanel();
-            var songsFlowPanel = ConfigureSongsPanel();
+            SetupMainContent();
 
             mainTableLayout.Controls.Add(searchPanel, 0, 0);
-            mainTableLayout.Controls.Add(songsFlowPanel, 0, 1);
+            mainTableLayout.Controls.Add(songFlowPanel, 0, 1);
 
             mainApp.MainPanel.Controls.Clear();
             mainApp.MainPanel.Controls.Add(mainTableLayout);
@@ -323,17 +326,56 @@ namespace Vibely_App.View
             return searchPanel;
         }
 
-        private FlowLayoutPanel ConfigureSongsPanel()
+        private void SetupMainContent()
         {
-            return new FlowLayoutPanel
+            songFlowPanel = new FlowLayoutPanel
             {
                 Dock = DockStyle.Fill,
-                FlowDirection = FlowDirection.TopDown,
-                WrapContents = false,
                 AutoScroll = true,
-                BackColor = Color.Transparent,
-                Padding = new Padding(0)
+                Padding = new Padding(20),
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false
             };
+            mainApp.MainPanel.Controls.Add(songFlowPanel);
+
+            UpdateSongs();
+        }
+
+        private void SongControl_OnDelete(object sender, Song songToDelete)
+        {
+            if (sender is SongControl controlToDelete)
+            {
+                var confirmResult = MessageBox.Show($"Are you sure you want to delete '{songToDelete.Title}'?",
+                                                     "Confirm Deletion",
+                                                     MessageBoxButtons.YesNo,
+                                                     MessageBoxIcon.Warning);
+
+                if (confirmResult == DialogResult.Yes)
+                {
+                    try
+                    {
+                        songBusiness.Remove(songToDelete.Id);
+
+                        songFlowPanel?.Controls.Remove(controlToDelete);
+
+                        MessageBox.Show($"Song '{songToDelete.Title}' deleted successfully.", "Deleted", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error deleting song: {ex.Message}", "Deletion Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    finally
+                    {
+                        controlToDelete.Dispose();
+                    }
+                }
+            }
+        }
+
+        private void SongControl_OnAddToPlaylist(object sender, Song songToAdd)
+        {
+            MessageBox.Show($"Add '{songToAdd.Title}' to playlist functionality not implemented yet.", "Not Implemented", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void ConfigurePlayerPanel()
@@ -526,7 +568,7 @@ namespace Vibely_App.View
         }
 
         //To be used as reference later
-        private void PopulateWithSampleData()
+        public void UpdateSongs()
         {
             var mainTableLayout = mainApp.MainPanel.Controls[0] as TableLayoutPanel;
             var songsFlowPanel = mainTableLayout?.GetControlFromPosition(0, 1) as FlowLayoutPanel;
@@ -535,26 +577,30 @@ namespace Vibely_App.View
             {
                 songsFlowPanel.Controls.Clear();
 
-                var sampleSongs = new[]
-                {
-                    new Song { Title = "Bohemian Rhapsody", Duration = 354, User = new User { FirstName = "Queen", LastName = "" }, Genre = new Genre { Name = "Rock" } },
-                    new Song { Title = "Hotel California", Duration = 391, User = new User { FirstName = "Eagles", LastName = "" }, Genre = new Genre { Name = "Rock" } },
-                    new Song { Title = "Sweet Dreams", Duration = 216, User = new User { FirstName = "Eurythmics", LastName = "" }, Genre = new Genre { Name = "Pop" } },
-                    new Song { Title = "Stairway to Heaven", Duration = 482, User = new User { FirstName = "Led Zeppelin", LastName = "" }, Genre = new Genre { Name = "Rock" } },
-                    new Song { Title = "Billie Jean", Duration = 294, User = new User { FirstName = "Michael", LastName = "Jackson" }, Genre = new Genre { Name = "Pop" } },
-                    new Song { Title = "Like a Rolling Stone", Duration = 373, User = new User { FirstName = "Bob", LastName = "Dylan" }, Genre = new Genre { Name = "Rock" } },
-                    new Song { Title = "Imagine", Duration = 183, User = new User { FirstName = "John", LastName = "Lennon" }, Genre = new Genre { Name = "Rock" } },
-                    new Song { Title = "Purple Rain", Duration = 520, User = new User { FirstName = "Prince", LastName = "" }, Genre = new Genre { Name = "Rock" } },
-                    new Song { Title = "Respect", Duration = 148, User = new User { FirstName = "Aretha", LastName = "Franklin" }, Genre = new Genre { Name = "Soul" } },
-                    new Song { Title = "Smells Like Teen Spirit", Duration = 301, User = new User { FirstName = "Nirvana", LastName = "" }, Genre = new Genre { Name = "Rock" } }
-                };
+                //var sampleSongs = new[]
+                //{
+                //    new Song { Title = "Bohemian Rhapsody", Duration = 354, User = new User { FirstName = "Queen", LastName = "" }, Genre = new Genre { Name = "Rock" } },
+                //    new Song { Title = "Hotel California", Duration = 391, User = new User { FirstName = "Eagles", LastName = "" }, Genre = new Genre { Name = "Rock" } },
+                //    new Song { Title = "Sweet Dreams", Duration = 216, User = new User { FirstName = "Eurythmics", LastName = "" }, Genre = new Genre { Name = "Pop" } },
+                //    new Song { Title = "Stairway to Heaven", Duration = 482, User = new User { FirstName = "Led Zeppelin", LastName = "" }, Genre = new Genre { Name = "Rock" } },
+                //    new Song { Title = "Billie Jean", Duration = 294, User = new User { FirstName = "Michael", LastName = "Jackson" }, Genre = new Genre { Name = "Pop" } },
+                //    new Song { Title = "Like a Rolling Stone", Duration = 373, User = new User { FirstName = "Bob", LastName = "Dylan" }, Genre = new Genre { Name = "Rock" } },
+                //    new Song { Title = "Imagine", Duration = 183, User = new User { FirstName = "John", LastName = "Lennon" }, Genre = new Genre { Name = "Rock" } },
+                //    new Song { Title = "Purple Rain", Duration = 520, User = new User { FirstName = "Prince", LastName = "" }, Genre = new Genre { Name = "Rock" } },
+                //    new Song { Title = "Respect", Duration = 148, User = new User { FirstName = "Aretha", LastName = "Franklin" }, Genre = new Genre { Name = "Soul" } },
+                //    new Song { Title = "Smells Like Teen Spirit", Duration = 301, User = new User { FirstName = "Nirvana", LastName = "" }, Genre = new Genre { Name = "Rock" } }
+                //};
 
-                foreach (var song in sampleSongs)
+                var songBusiness = new SongBusiness(new VibelyDbContext());
+                var allSongs = songBusiness.GetAll();
+
+                foreach (var song in allSongs)
                 {
                     var songControl = new SongControl(song);
                     songControl.Width = songsFlowPanel.Width - 40;
                     songControl.Margin = new Padding(0, 0, 0, 10);
                     songControl.Cursor = Cursors.Hand;
+                    songControl.OnDelete += SongControl_OnDelete;
                     songsFlowPanel.Controls.Add(songControl);
                 }
             }
