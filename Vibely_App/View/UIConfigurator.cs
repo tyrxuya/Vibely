@@ -43,7 +43,7 @@ namespace Vibely_App.View
             ConfigureSidePanel();
             ConfigureMainPanel();
             ConfigurePlayerPanel();
-            PopulateWithSampleData();
+            UpdateSongs();
         }
 
         private void ConfigureSidePanel()
@@ -526,7 +526,7 @@ namespace Vibely_App.View
         }
 
         //To be used as reference later
-        private void PopulateWithSampleData()
+        public void UpdateSongs()
         {
             var mainTableLayout = mainApp.MainPanel.Controls[0] as TableLayoutPanel;
             var songsFlowPanel = mainTableLayout?.GetControlFromPosition(0, 1) as FlowLayoutPanel;
@@ -535,21 +535,24 @@ namespace Vibely_App.View
             {
                 songsFlowPanel.Controls.Clear();
 
-                var sampleSongs = new[]
-                {
-                    new Song { Title = "Bohemian Rhapsody", Duration = 354, User = new User { FirstName = "Queen", LastName = "" }, Genre = new Genre { Name = "Rock" } },
-                    new Song { Title = "Hotel California", Duration = 391, User = new User { FirstName = "Eagles", LastName = "" }, Genre = new Genre { Name = "Rock" } },
-                    new Song { Title = "Sweet Dreams", Duration = 216, User = new User { FirstName = "Eurythmics", LastName = "" }, Genre = new Genre { Name = "Pop" } },
-                    new Song { Title = "Stairway to Heaven", Duration = 482, User = new User { FirstName = "Led Zeppelin", LastName = "" }, Genre = new Genre { Name = "Rock" } },
-                    new Song { Title = "Billie Jean", Duration = 294, User = new User { FirstName = "Michael", LastName = "Jackson" }, Genre = new Genre { Name = "Pop" } },
-                    new Song { Title = "Like a Rolling Stone", Duration = 373, User = new User { FirstName = "Bob", LastName = "Dylan" }, Genre = new Genre { Name = "Rock" } },
-                    new Song { Title = "Imagine", Duration = 183, User = new User { FirstName = "John", LastName = "Lennon" }, Genre = new Genre { Name = "Rock" } },
-                    new Song { Title = "Purple Rain", Duration = 520, User = new User { FirstName = "Prince", LastName = "" }, Genre = new Genre { Name = "Rock" } },
-                    new Song { Title = "Respect", Duration = 148, User = new User { FirstName = "Aretha", LastName = "Franklin" }, Genre = new Genre { Name = "Soul" } },
-                    new Song { Title = "Smells Like Teen Spirit", Duration = 301, User = new User { FirstName = "Nirvana", LastName = "" }, Genre = new Genre { Name = "Rock" } }
-                };
+                //var sampleSongs = new[]
+                //{
+                //    new Song { Title = "Bohemian Rhapsody", Duration = 354, User = new User { FirstName = "Queen", LastName = "" }, Genre = new Genre { Name = "Rock" } },
+                //    new Song { Title = "Hotel California", Duration = 391, User = new User { FirstName = "Eagles", LastName = "" }, Genre = new Genre { Name = "Rock" } },
+                //    new Song { Title = "Sweet Dreams", Duration = 216, User = new User { FirstName = "Eurythmics", LastName = "" }, Genre = new Genre { Name = "Pop" } },
+                //    new Song { Title = "Stairway to Heaven", Duration = 482, User = new User { FirstName = "Led Zeppelin", LastName = "" }, Genre = new Genre { Name = "Rock" } },
+                //    new Song { Title = "Billie Jean", Duration = 294, User = new User { FirstName = "Michael", LastName = "Jackson" }, Genre = new Genre { Name = "Pop" } },
+                //    new Song { Title = "Like a Rolling Stone", Duration = 373, User = new User { FirstName = "Bob", LastName = "Dylan" }, Genre = new Genre { Name = "Rock" } },
+                //    new Song { Title = "Imagine", Duration = 183, User = new User { FirstName = "John", LastName = "Lennon" }, Genre = new Genre { Name = "Rock" } },
+                //    new Song { Title = "Purple Rain", Duration = 520, User = new User { FirstName = "Prince", LastName = "" }, Genre = new Genre { Name = "Rock" } },
+                //    new Song { Title = "Respect", Duration = 148, User = new User { FirstName = "Aretha", LastName = "Franklin" }, Genre = new Genre { Name = "Soul" } },
+                //    new Song { Title = "Smells Like Teen Spirit", Duration = 301, User = new User { FirstName = "Nirvana", LastName = "" }, Genre = new Genre { Name = "Rock" } }
+                //};
 
-                foreach (var song in sampleSongs)
+                var songBusiness = new SongBusiness(new VibelyDbContext());
+                var allSongs = songBusiness.GetAll();
+
+                foreach (var song in allSongs)
                 {
                     var songControl = new SongControl(song);
                     songControl.Width = songsFlowPanel.Width - 40;
