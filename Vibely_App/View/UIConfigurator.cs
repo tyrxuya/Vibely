@@ -41,6 +41,8 @@ namespace Vibely_App.View
         private readonly object playbackLock = new object(); // Lock for synchronization
         private List<Song> currentSongList; // List of currently loaded songs
         private bool isSkippingTrack = false; // Flag for Next/Prev button clicks
+        private System.Windows.Forms.Timer searchDebounceTimer; // Timer for dynamic search
+        private const int SEARCH_DEBOUNCE_INTERVAL_MS = 300; // Delay in ms after typing stops
 
         public static bool IsDarkMode { get; set; } = true;
         public static event EventHandler ThemeToggled;
@@ -59,6 +61,7 @@ namespace Vibely_App.View
             songBusiness = new SongBusiness(new VibelyDbContext());
             InitializePlaybackTimer(); // Initialize the timer
             InitializeAudioPlaybackEngine(); // Initialize NAudio engine
+            InitializeSearchDebounceTimer(); // Initialize the search timer
         }
 
         public void InitializeUI()
@@ -377,32 +380,43 @@ namespace Vibely_App.View
             searchPanel.Layout += (s, e) => CenterSearchControls();
             mainApp.Resize += (s, e) => CenterSearchControls();
 
-            // --- Add Search Event Handlers ---
-            mainApp.BtnSearch.Click -= SearchButton_Click; // Remove existing if any
+            // --- Update Search Event Handlers ---
+            // Keep button click as an option
+            mainApp.BtnSearch.Click -= SearchButton_Click;
             mainApp.BtnSearch.Click += SearchButton_Click;
 
-            mainApp.TxtSearch.KeyDown -= SearchTextBox_KeyDown; // Remove existing if any
-            mainApp.TxtSearch.KeyDown += SearchTextBox_KeyDown;
+            // Add TextChanged handler for dynamic search
+            mainApp.TxtSearch.TextChanged -= TxtSearch_TextChanged; // Remove previous if any
+            mainApp.TxtSearch.TextChanged += TxtSearch_TextChanged;
             // ---------------------------------
 
             return searchPanel;
         }
 
-        // --- Search Event Handlers ---
+        // --- Dynamic Search TextChanged Handler ---
+        private void TxtSearch_TextChanged(object sender, EventArgs e)
+        {
+            // Restart the debounce timer every time the text changes
+            searchDebounceTimer.Stop();
+            searchDebounceTimer.Start();
+        }
+        // ----------------------------------------
+
+        // --- Timer Tick Handler for Debounced Search ---
+        private void SearchDebounceTimer_Tick(object sender, EventArgs e)
+        {
+            // Timer has ticked, meaning user paused typing
+            searchDebounceTimer.Stop(); // Stop the timer
+            PerformSearch(); // Perform the actual search
+        }
+        // ----------------------------------------------
+
+        // Keep SearchButton_Click to allow explicit search
         private void SearchButton_Click(object sender, EventArgs e)
         {
+            searchDebounceTimer.Stop(); // Stop timer if running
             PerformSearch();
         }
-
-        private void SearchTextBox_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Enter)
-            {
-                PerformSearch();
-                e.SuppressKeyPress = true; // Prevent the 'ding' sound on Enter
-            }
-        }
-        // ---------------------------
 
         // --- Search Logic ---
         private void PerformSearch()
@@ -1299,6 +1313,14 @@ namespace Vibely_App.View
             VolumeSlider_ValueChanged(null, EventArgs.Empty);
         }
 
+        private void InitializeSearchDebounceTimer()
+        {
+            searchDebounceTimer = new System.Windows.Forms.Timer();
+            searchDebounceTimer.Interval = SEARCH_DEBOUNCE_INTERVAL_MS;
+            searchDebounceTimer.Tick += SearchDebounceTimer_Tick;
+            // No need to start it here, it starts on text change
+        }
+
         private void PlayAdjacentSong(int direction) // direction: 1 for next, -1 for previous
         {
             lock (playbackLock)
@@ -1369,6 +1391,15 @@ namespace Vibely_App.View
                          { // Timer disposal is safe outside lock if needed, but fine here
                              playbackTimer.Dispose();
                              playbackTimer = null;
+                         }
+
+                         // Dispose search timer
+                         if (searchDebounceTimer != null)
+                         {
+                             searchDebounceTimer.Stop(); // Ensure stopped
+                             searchDebounceTimer.Tick -= SearchDebounceTimer_Tick;
+                             searchDebounceTimer.Dispose();
+                             searchDebounceTimer = null;
                          }
                      }
                      disposedValue = true;
