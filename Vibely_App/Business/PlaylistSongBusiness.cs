@@ -32,6 +32,14 @@ namespace Vibely_App.Business
 
             _dbContext.PlaylistsSongs.Add(playlistSong);
             _dbContext.SaveChanges();
+
+            var playlist = _dbContext.Playlists.Find(playlistSong.PlaylistId);
+            var song = _dbContext.Songs.Find(playlistSong.SongId);
+            _dbContext.Entry(playlist).State = EntityState.Detached;
+            playlist.Duration += song.Duration;
+            _dbContext.Attach(playlist);
+            _dbContext.Entry(playlist).State = EntityState.Modified;
+            _dbContext.SaveChanges();
         }
 
         public PlaylistSong? Find(int id)
@@ -43,6 +51,18 @@ namespace Vibely_App.Business
         //{
         //    return Find(playlistSong.Id);
         //}
+
+        public List<Song> GetAllSongsInPlaylist(Playlist playlist)
+        {
+            return _dbContext.PlaylistsSongs
+                .Include(ps => ps.Song)
+                .ThenInclude(s => s.Genre)
+                .Include(ps => ps.Song)
+                .ThenInclude(s => s.User)
+                .Where(ps => ps.PlaylistId == playlist.Id)
+                .Select(ps => ps.Song)
+                .ToList();
+        }
 
         public void Remove(int id)
         {
@@ -71,6 +91,14 @@ namespace Vibely_App.Business
 
                 _dbContext.SaveChanges();
             }
+        }
+
+        public PlaylistSong? FindByPlaylistAndSong(Playlist playlist, Song song)
+        {
+            return _dbContext.PlaylistsSongs
+                .Include(ps => ps.Song)
+                .Include(ps => ps.Playlist)
+                .FirstOrDefault(ps => ps.PlaylistId == playlist.Id && ps.SongId == song.Id);
         }
     }
 }
