@@ -45,7 +45,7 @@ namespace Vibely_App.Controls
 
             lblArtist = new Label
             {
-                Text = Song.User.FirstName + " " + Song.User.LastName,
+                Text = Song.Artist,
                 ForeColor = ColorTranslator.FromHtml(UIConfigurator.IsDarkMode ? "#C7ADFF" : "#3F3649"),
                 Font = new Font("Segoe UI", 10),
                 Location = new Point(10, 35),
