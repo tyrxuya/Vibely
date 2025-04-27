@@ -102,6 +102,7 @@ namespace Vibely_App.Business
             TimeSpan duration = TimeSpan.Zero;
             try
             {
+                Debug.WriteLine("[UploadSong] Attempting to read tags from memory stream...");
                 using (var stream = new MemoryStream(songData))
                 {
                     // Create a custom IFileAbstraction implementation for the MemoryStream
@@ -109,31 +110,39 @@ namespace Vibely_App.Business
                     using (var tagFile = TagLib.File.Create(fileAbstraction))
                     {
                         title = tagFile.Tag.Title;
-                        artist = tagFile.Tag.FirstPerformer; // Or FirstArtist 
+                        // Try Performer first, then fall back to Album Artist
+                        artist = tagFile.Tag.FirstPerformer; 
+                        if (string.IsNullOrEmpty(artist)){
+                            artist = tagFile.Tag.FirstAlbumArtist;
+                        }
                         duration = tagFile.Properties.Duration;
-                        genre = tagFile.Tag.Genres.First();
+                        genre = tagFile.Tag.Genres.FirstOrDefault(); // Use FirstOrDefault for safety
+                        Debug.WriteLine($"[UploadSong] Tags read: Title='{title}', Artist='{artist}', Duration='{duration}', Genre='{genre}'");
                     }
                 }
             }
             catch (CorruptFileException ex)
             {
-                Debug.WriteLine($"Error reading tags (corrupt file): {ex.Message}");
+                Debug.WriteLine($"[UploadSong] Error reading tags (corrupt file): {ex.Message}");
                 // Handle case: maybe proceed without tags or reject the file
                 return false;
             }
             catch (UnsupportedFormatException ex)
             {
-                Debug.WriteLine($"Error reading tags (unsupported format): {ex.Message}");
+                Debug.WriteLine($"[UploadSong] Error reading tags (unsupported format): {ex.Message}");
                 // Handle case: file format might be valid audio but not supported by TagLib#
                 return false;
             }
             catch (Exception ex)
             {
                 // Handle other potential errors during metadata extraction
-                Debug.WriteLine($"Error extracting metadata: {ex.Message}");
-                // Maybe set default values or return false 
+                Debug.WriteLine($"[UploadSong] Error extracting metadata: {ex.Message}\n{ex.StackTrace}");
+                // Decide if we should proceed with default values or fail
+                // Currently, it proceeds, potentially leading to unexpected defaults
+                // return false; // Uncomment this if extraction failure should prevent upload
             }
 
+            Debug.WriteLine($"[UploadSong] After tag extraction: Title='{title}', Artist='{artist}', Duration='{duration}', Genre='{genre}'");
 
             // 3. Prepare Song Entity:
             //    - Create a new `Song` object.
@@ -158,9 +167,14 @@ namespace Vibely_App.Business
             {
                 genreEntity = new Genre { Name = genre };
                 _dbContext.Genres.Add(genreEntity);
-                genreEntity = genreBusiness.FindByName(genre);
+                // Need SaveChanges here to get the new Genre's ID if it was just added
+                _dbContext.SaveChanges(); 
+                // Refetch after saving to ensure we have the entity with its ID
+                // genreEntity = genreBusiness.FindByName(genre); // This might still fail if SaveChanges doesn't update the original variable ref
+                genreEntity = _dbContext.Genres.Local.FirstOrDefault(g => g.Name == genre) ?? genreBusiness.FindByName(genre); 
+                Debug.WriteLine($"[UploadSong] Created new genre: {genreEntity?.Name} with ID: {genreEntity?.Id}");
             }
-            if (string.IsNullOrEmpty(genre))
+            if (genreEntity == null && string.IsNullOrEmpty(genre)) // Added check for genreEntity being null here too
             {
                 genreEntity = genreBusiness.FindByName("Unknown genre");
             }
@@ -169,7 +183,7 @@ namespace Vibely_App.Business
                 Title = title ?? Path.GetFileNameWithoutExtension(originalFileName),
                 Duration = (int)duration.TotalSeconds,
                 UserId = user.Id,
-                GenreId = genreEntity.Id,
+                GenreId = genreEntity.Id, // This line could still throw if genreEntity is null after all checks
                 Data = songData,
                 Artist = artist ?? "Unknown Artist"
             };
