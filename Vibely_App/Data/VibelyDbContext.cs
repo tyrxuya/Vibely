@@ -21,6 +21,8 @@ namespace Vibely_App.Data
             }
         }
 
+        public VibelyDbContext(DbContextOptions options) : base(options) {}
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             var config = new ConfigurationBuilder()
