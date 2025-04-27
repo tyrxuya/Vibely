@@ -41,6 +41,7 @@ namespace Vibely_App.View
         private readonly object playbackLock = new object(); // Lock for synchronization
         private List<Song> currentSongList; // List of currently loaded songs
         private bool isSkippingTrack = false; // Flag for Next/Prev button clicks
+        private bool isIntentionalStop = false; // Flag to signal StopPlaybackInternally was called programmatically
         private System.Windows.Forms.Timer searchDebounceTimer; // Timer for dynamic search
         private const int SEARCH_DEBOUNCE_INTERVAL_MS = 300; // Delay in ms after typing stops
 
@@ -79,7 +80,7 @@ namespace Vibely_App.View
         private void ConfigureSidePanel()
         {
             mainApp.SidePanel.Controls.Clear(); // Clear all controls first
-            
+
             mainApp.SidePanel.Width = SIDEBAR_WIDTH;
             mainApp.SidePanel.BackColor = ColorTranslator.FromHtml(IsDarkMode ? "#190028" : "#DAC7FF");
             mainApp.SidePanel.Dock = DockStyle.Left;
@@ -191,11 +192,11 @@ namespace Vibely_App.View
             // Hide the main form before showing profile
             Form mainForm = mainApp as Form;
             mainForm.Hide();
-            
+
             // Show profile form
             var profileForm = new ProfileForm(activeUser);
             profileForm.ShowDialog();
-            
+
             // Check if user logged off
             if (!profileForm.WasCancelled)
             {
@@ -371,7 +372,7 @@ namespace Vibely_App.View
             {
                 int availableWidth = searchPanel.Width;
                 int startX = (availableWidth - TOTAL_WIDTH) / 2;
-                
+
                 mainApp.BtnUpload.Location = new Point(startX, 20);
                 mainApp.TxtSearch.Location = new Point(startX + BUTTON_WIDTH + SPACING, 20);
                 mainApp.BtnSearch.Location = new Point(mainApp.TxtSearch.Right + SPACING, 20);
@@ -427,33 +428,33 @@ namespace Vibely_App.View
             List<Song> baseSongList;
             lock (playbackLock) // Access activePlaylist safely
             {
-                 // Get the base list depending on the currently selected playlist
-                 if (activePlaylist == null) // "All songs" selected
-                 {
-                     baseSongList = songBusiness.GetAll();
-                 }
-                 else
-                 {
-                     var playlistSongs = new PlaylistSongBusiness(new VibelyDbContext());
-                     baseSongList = playlistSongs.GetAllSongsInPlaylist(activePlaylist);
-                 }
+                // Get the base list depending on the currently selected playlist
+                if (activePlaylist == null) // "All songs" selected
+                {
+                    baseSongList = songBusiness.GetAll();
+                }
+                else
+                {
+                    var playlistSongs = new PlaylistSongBusiness(new VibelyDbContext());
+                    baseSongList = playlistSongs.GetAllSongsInPlaylist(activePlaylist);
+                }
             }
 
-             List<Song> filteredSongs;
-             if (string.IsNullOrWhiteSpace(searchText))
-             {
-                 filteredSongs = baseSongList; // No search text, show all from current view
-             }
-             else
-             {
-                 filteredSongs = baseSongList
-                     .Where(s => (s.Title != null && s.Title.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0) ||
-                                 (s.Artist != null && s.Artist.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0))
-                     .ToList();
-             }
+            List<Song> filteredSongs;
+            if (string.IsNullOrWhiteSpace(searchText))
+            {
+                filteredSongs = baseSongList; // No search text, show all from current view
+            }
+            else
+            {
+                filteredSongs = baseSongList
+                    .Where(s => (s.Title != null && s.Title.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                                (s.Artist != null && s.Artist.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0))
+                    .ToList();
+            }
 
-             Debug.WriteLine($"Search found {filteredSongs.Count} songs.");
-             DisplaySongs(filteredSongs); // Update the UI with filtered results
+            Debug.WriteLine($"Search found {filteredSongs.Count} songs.");
+            DisplaySongs(filteredSongs); // Update the UI with filtered results
         }
         // ------------------
 
@@ -486,12 +487,12 @@ namespace Vibely_App.View
                     try
                     {
                         if (activePlaylist == null)
-                    {
-                        songBusiness.Remove(songToDelete.Id);
+                        {
+                            songBusiness.Remove(songToDelete.Id);
 
-                        songFlowPanel?.Controls.Remove(controlToDelete);
+                            songFlowPanel?.Controls.Remove(controlToDelete);
 
-                        MessageBox.Show($"Song '{songToDelete.Title}' deleted successfully.", "Deleted", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            MessageBox.Show($"Song '{songToDelete.Title}' deleted successfully.", "Deleted", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }
                         else
                         {
@@ -561,7 +562,7 @@ namespace Vibely_App.View
                         PlaylistId = playlistToAdd.Id,
                         SongId = songToAdd.Id
                     };
-                    
+
                     playlistSongBusiness.Add(ps);
                 };
                 playlistMenu.Items.Add(playlistItem);
@@ -570,11 +571,11 @@ namespace Vibely_App.View
             // Show the context menu at the current mouse position
             if (sender is Control control) // Ensure sender is a control to get position
             {
-                 playlistMenu.Show(control, control.PointToClient(Cursor.Position));
+                playlistMenu.Show(control, control.PointToClient(Cursor.Position));
             }
             else // Fallback if sender is not a control (though it should be)
             {
-                 playlistMenu.Show(Cursor.Position);
+                playlistMenu.Show(Cursor.Position);
             }
         }
 
@@ -688,17 +689,17 @@ namespace Vibely_App.View
             mainApp.Resize += (s, e) =>
             {
                 playbackPanel.Location = new Point((mainApp.PlayerPanel.Width - playbackPanel.Width) / 2, 10);
-                
+
                 int progressBarWidth = mainApp.PlayerPanel.Width - 600;
                 mainApp.TrackBarProgress.Width = progressBarWidth;
                 mainApp.TrackBarProgress.Size = new Size(progressBarWidth, 23);
                 mainApp.TrackBarProgress.Location = new Point(300, 60);
-                
+
                 mainApp.LblCurrentSong.Location = new Point(300, 20);
                 mainApp.LblCurrentArtist.Location = new Point(300, 40);
                 mainApp.LblCurrentTime.Location = new Point(260, 60);
                 mainApp.LblTotalTime.Location = new Point(mainApp.PlayerPanel.Width - 280, 60);
-                
+
                 volumePanel.Location = new Point(mainApp.PlayerPanel.Width - volumePanel.Width - 20, 35);
             };
 
@@ -741,7 +742,7 @@ namespace Vibely_App.View
 
         private void NextButton_Click(object sender, EventArgs e)
         {
-             PlayAdjacentSong(1); // Play next
+            PlayAdjacentSong(1); // Play next
         }
 
         private void VolumeButton_Click(object sender, EventArgs e)
@@ -817,14 +818,14 @@ namespace Vibely_App.View
             isDraggingSlider = false; // Reset flag outside lock
         }
 
-         // Update time label continuously while scrolling if desired
+        // Update time label continuously while scrolling if desired
         private void ProgressBar_Scroll(object sender, EventArgs e)
         {
-             if (currentPlayingSong != null && isDraggingSlider)
-             {
-                 // Update label based on slider value directly during scroll
-                 mainApp.LblCurrentTime.Text = FormatTime(mainApp.TrackBarProgress.Value);
-             }
+            if (currentPlayingSong != null && isDraggingSlider)
+            {
+                // Update label based on slider value directly during scroll
+                mainApp.LblCurrentTime.Text = FormatTime(mainApp.TrackBarProgress.Value);
+            }
         }
 
         private void TogglePlayPause()
@@ -885,25 +886,26 @@ namespace Vibely_App.View
                 // }
                 // else
                 // {
-                     UpdatePlaybackUI();
+                UpdatePlaybackUI();
                 // }
             }
         }
 
         private void UpdatePlaybackUI()
         {
-             if (mainApp.InvokeRequired)
-             {
-                 mainApp.Invoke(new Action(UpdatePlaybackUI));
-                 return;
-             }
+            if (mainApp.InvokeRequired)
+            {
+                mainApp.Invoke(new Action(UpdatePlaybackUI));
+                return;
+            }
 
             if (currentPlayingSong != null)
             {
                 // Update Progress Bar based on audioReader's position
                 totalDurationSeconds = audioReader?.TotalTime.TotalSeconds ?? totalDurationSeconds; // Update total duration if reader provides it
                 int maxProgress = (int)Math.Max(1, totalDurationSeconds); // Ensure max is at least 1
-                if (mainApp.TrackBarProgress.Maximum != maxProgress) {
+                if (mainApp.TrackBarProgress.Maximum != maxProgress)
+                {
                     mainApp.TrackBarProgress.Maximum = maxProgress;
                 }
                 int progressValue = (int)Math.Min(currentPositionSeconds, maxProgress);
@@ -921,79 +923,120 @@ namespace Vibely_App.View
 
         private void PlaySong(Song song)
         {
-            lock (playbackLock) // Lock before modifying playback state
+            // --- Pre-checks and Preparation (Outside Lock) ---
+            if (song?.Data == null || song.Data.Length == 0)
             {
-                isStoppingForNewSong = true; // Set flag: Stop is for loading new song
-                StopPlaybackInternally(); // This call is now within the lock
-                isStoppingForNewSong = false; // Reset flag
+                MessageBox.Show("Song data is missing or empty.", "Playback Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                ResetPlaybackUI(); // Ensure UI is reset
+                return;
+            }
 
-                if (song?.Data == null || song.Data.Length == 0)
+            MemoryStream tempAudioStream = null;
+            WaveStream tempAudioReader = null;
+            double tempTotalDurationSeconds = 0;
+
+            try
+            {
+                tempAudioStream = new MemoryStream(song.Data);
+                tempAudioReader = CreateWaveStream(tempAudioStream); // Format detection
+
+                if (tempAudioReader == null)
                 {
-                    MessageBox.Show("Song data is missing or empty.", "Playback Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    ResetPlaybackUI(); // Just ensure UI is reset (safe outside lock as it queues to UI thread)
+                    MessageBox.Show("Could not recognize audio format.", "Playback Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    ResetPlaybackUI();
+                    tempAudioStream?.Dispose(); // Dispose stream if reader creation failed
                     return;
                 }
+                tempTotalDurationSeconds = tempAudioReader.TotalTime.TotalSeconds;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"NAudio Error during pre-load/format detection: {ex}");
+                Action showError = () => MessageBox.Show($"Error preparing song: {ex.Message}", "Playback Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                if (mainApp.InvokeRequired) mainApp.Invoke(showError); else showError();
+                ResetPlaybackUI();
+                tempAudioReader?.Dispose(); // Dispose reader if created
+                tempAudioStream?.Dispose(); // Dispose stream
+                return;
+            }
+            // --- End Preparation ---
 
+
+            lock (playbackLock) // Lock only for critical state changes and device interaction
+            {
+                isStoppingForNewSong = true; // Set flag: Stop is for loading new song
+                isIntentionalStop = true; // Set flag BEFORE stopping
+                StopPlaybackInternally(); // Stop existing playback *within the lock* - REMOVED parameter
+                isStoppingForNewSong = false; // Reset flag
+
+                // Assign prepared resources
                 currentPlayingSong = song;
+                audioStream = tempAudioStream; // Take ownership of the stream
+                audioReader = tempAudioReader; // Take ownership of the reader
+                totalDurationSeconds = tempTotalDurationSeconds;
                 currentPositionSeconds = 0;
                 isDraggingSlider = false;
 
+
+                // Update UI with new song info (queues to UI thread, safe outside lock logic but done here for consistency)
+                // It's generally safe to call Invoke/BeginInvoke from within a lock if needed,
+                // but better to minimize lock duration. We'll keep UI updates outside the critical playback start.
+
                 try
                 {
-                    audioStream = new MemoryStream(song.Data);
-                    audioReader = CreateWaveStream(audioStream); // Format detection doesn't need lock
-
-                    if (audioReader == null)
-                    {
-                        MessageBox.Show("Could not recognize audio format.", "Playback Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                         ResetPlaybackUI(); // Safe outside lock
-                        return;
-                    }
-
-                    totalDurationSeconds = audioReader.TotalTime.TotalSeconds;
-
-                    // Update UI with new song info (queues to UI thread, safe outside lock)
-                    if (mainApp.InvokeRequired)
-                    { mainApp.Invoke(new Action(UpdateUIAfterSongLoad)); }
-                    else
-                    { UpdateUIAfterSongLoad(); }
-
                     // Initialize and Play within the lock
-                    if (waveOut == null) { InitializeAudioPlaybackEngine(); } // Re-initialize if disposed
-                    waveOut.Init(audioReader);
+                    if (waveOut == null) { InitializeAudioPlaybackEngine(); } // Re-initialize if disposed (should happen under lock)
+                    waveOut.Init(audioReader); // Init must happen before Play
                     waveOut.Play();
                     isPlaying = true; // Set playing state *after* successful start
                     playbackTimer.Start(); // Timer start/stop is thread-safe
-                    // Update button state (queues to UI thread, safe outside lock)
-                    Action updateBtn = () => { if (mainApp?.BtnPlay != null) mainApp.BtnPlay.Text = "⏸"; };
-                     if (mainApp.InvokeRequired) mainApp.Invoke(updateBtn); else updateBtn();
 
                     Debug.WriteLine($"Playing: {song.Title} (Format: {audioReader.GetType().Name})");
                 }
                 catch (Exception ex)
                 {
-                     Debug.WriteLine($"NAudio Playback Error in PlaySong: {ex}");
+                    Debug.WriteLine($"NAudio Playback Error in PlaySong (Init/Play): {ex}");
                     // Show error message (queues to UI thread, safe outside lock)
-                     Action showError = () => MessageBox.Show($"Error playing song: {ex.Message}", "Playback Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                     if (mainApp.InvokeRequired) mainApp.Invoke(showError); else showError();
+                    Action showError = () => MessageBox.Show($"Error starting playback: {ex.Message}", "Playback Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    if (mainApp.InvokeRequired) mainApp.Invoke(showError); else showError();
 
-                    StopPlaybackInternally(); // Clean up within the lock
-                    ResetPlaybackUI(); // Reset UI (safe outside lock)
+                    isIntentionalStop = true; // Also set flag if stop happens due to error here
+                    StopPlaybackInternally(); // Clean up playback resources *within the lock* - REMOVED parameter
+                    currentPlayingSong = null; // Clear current song on error
+                    isPlaying = false; // Ensure state reflects failure
+
+                    // UI Reset happens outside lock
                 }
-            } // End Lock
+            } // --- End Lock ---
+
+            // --- Post-Lock UI Updates ---
+            // If playback started successfully, update UI. If it failed, ResetPlaybackUI will handle it.
+            if (isPlaying) // Check state *after* lock release (might be slightly stale but UI updates are queued anyway)
+            {
+                Action updateUI = () => {
+                    UpdateUIAfterSongLoad(); // Update song title, duration etc.
+                    if (mainApp?.BtnPlay != null) mainApp.BtnPlay.Text = "⏸"; // Set pause button
+                };
+                if (mainApp.InvokeRequired) mainApp.Invoke(updateUI); else updateUI();
+            }
+            else
+            {
+                // Ensure UI is reset if playback failed to start
+                ResetPlaybackUI();
+            }
         }
 
         // Helper to update UI elements after song loaded and reader created
         private void UpdateUIAfterSongLoad()
         {
-             mainApp.LblCurrentSong.Text = currentPlayingSong.Title ?? "Unknown Title";
-             mainApp.LblCurrentArtist.Text = currentPlayingSong.Artist ?? "Unknown Artist";
-             mainApp.LblTotalTime.Text = FormatTime(totalDurationSeconds);
-             mainApp.LblCurrentTime.Text = FormatTime(currentPositionSeconds);
-             mainApp.TrackBarProgress.Minimum = 0;
-             int maxProgress = (int)Math.Max(1, totalDurationSeconds); // Ensure max is at least 1
-             mainApp.TrackBarProgress.Maximum = maxProgress;
-             mainApp.TrackBarProgress.Value = 0;
+            mainApp.LblCurrentSong.Text = currentPlayingSong.Title ?? "Unknown Title";
+            mainApp.LblCurrentArtist.Text = currentPlayingSong.Artist ?? "Unknown Artist";
+            mainApp.LblTotalTime.Text = FormatTime(totalDurationSeconds);
+            mainApp.LblCurrentTime.Text = FormatTime(currentPositionSeconds);
+            mainApp.TrackBarProgress.Minimum = 0;
+            int maxProgress = (int)Math.Max(1, totalDurationSeconds); // Ensure max is at least 1
+            mainApp.TrackBarProgress.Maximum = maxProgress;
+            mainApp.TrackBarProgress.Value = 0;
         }
 
         // --- Format Detection Logic ---
@@ -1038,7 +1081,7 @@ namespace Vibely_App.View
         // -----------------------------
 
         // Internal stop to release resources without fully resetting UI immediately
-        private void StopPlaybackInternally()
+        private void StopPlaybackInternally() // REMOVED parameter
         {
             // Assumes already within lock(playbackLock)
             playbackTimer.Stop();
@@ -1046,15 +1089,17 @@ namespace Vibely_App.View
 
             if (waveOut != null && waveOut.PlaybackState != PlaybackState.Stopped)
             {
-                 try { waveOut.Stop(); } catch (Exception ex) { Debug.WriteLine($"Error stopping waveOut: {ex.Message}"); }
+                // Flag is now set by caller before this method
+                try { waveOut.Stop(); } catch (Exception ex) { Debug.WriteLine($"Error stopping waveOut: {ex.Message}"); }
             }
+            // else { isIntentionalStop = false; } // Flag is not managed here anymore
 
             audioReader?.Dispose();
             audioReader = null;
             audioStream?.Dispose();
             audioStream = null;
 
-            Debug.WriteLine("Internal Playback Stop");
+            Debug.WriteLine($"Internal Playback Stop"); // Removed intentional logging here
         }
 
         // This method acquires the lock itself
@@ -1062,9 +1107,9 @@ namespace Vibely_App.View
         {
             lock (playbackLock)
             {
-                isStoppingForNewSong = true;
-                StopPlaybackInternally(); // Call the internal stop *within* the lock
-                isStoppingForNewSong = false;
+                // Removed isStoppingForNewSong flags here as StopPlaybackInternally handles the core logic
+                isIntentionalStop = true; // Set flag BEFORE stopping
+                StopPlaybackInternally(); // Call the internal stop *within* the lock - REMOVED parameter
             }
             // Reset UI outside the lock (queues to UI thread)
             if (mainApp.InvokeRequired) { mainApp.Invoke(new Action(ResetPlaybackUI)); }
@@ -1086,9 +1131,9 @@ namespace Vibely_App.View
 
         private void OnPlaybackStopped(object sender, StoppedEventArgs args)
         {
-             // This event handler runs outside our lock, so we should avoid
-             // modifying shared state directly here if possible, or re-acquire the lock.
-             // For now, we focus on safe disposal and UI updates (which are queued).
+            // This event handler runs outside our lock, so we should avoid
+            // modifying shared state directly here if possible, or re-acquire the lock.
+            // For now, we focus on safe disposal and UI updates (which are queued).
 
             Debug.WriteLine("Playback Stopped Event Received");
 
@@ -1103,66 +1148,59 @@ namespace Vibely_App.View
             bool resetUi = false;
             bool playNext = false; // Default to not autoplaying
             string reason = "unknown";
+            bool wasIntentional = false;
 
             // Determine reason and action based on flags checked under lock
             lock (playbackLock)
             {
-                if (playbackException != null) {
+                Debug.WriteLine($" >> OnPlaybackStopped LOCK: isIntentionalStop = {isIntentionalStop}");
+                if (isIntentionalStop) // Check the flag first
+                {
+                    wasIntentional = true; // For logging purposes
+                    isIntentionalStop = false; // Reset the flag immediately
+                    playNext = false;
+                    resetUi = false; // Generally, the new PlaySong handles UI
+                    reason = "intentional stop (new song/skip/stop)";
+                }
+                else if (playbackException != null)
+                {
                     resetUi = true;
                     playNext = false;
                     reason = "playback error";
                 }
-                else if (isStoppingForNewSong) { // Stopped for user clicking a specific song
-                    resetUi = false;
-                    playNext = false;
-                    reason = "switching songs";
-                }
-                else if (isSkippingTrack) { // Stopped because Next/Prev was clicked
-                     resetUi = false; // Let the new song's PlaySong call handle UI updates
-                     playNext = false;
-                     reason = "track skipped";
-                     // NOTE: isSkippingTrack flag is reset in PlayAdjacentSong
-                }
-                else { // Assume natural stop if none of the above
+                else // Stop was not intentional and no error -> Natural stop
+                {
                     resetUi = true;
                     playNext = true;
                     reason = "natural stop";
                 }
             }
 
-            Debug.WriteLine($"OnPlaybackStopped: Reason='{reason}', NeedsReset={resetUi}, NeedsAutoplay={playNext}, IsPlaying={isPlaying}");
+            Debug.WriteLine($"OnPlaybackStopped: Reason='{reason}', Intentional={wasIntentional}, NeedsReset={resetUi}, NeedsAutoplay={playNext}, Exception='{playbackException?.Message}'");
 
             if (playbackException != null)
             {
                 // Show error message (queues to UI thread, safe outside lock)
                 Action showError = () => {
-                     if (mainApp != null) {
-                          MessageBox.Show(mainApp, $"Playback error: {playbackException.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                     }
+                    if (mainApp != null)
+                    {
+                        MessageBox.Show(mainApp, $"Playback error: {playbackException.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 };
                 if (mainApp != null && mainApp.InvokeRequired) { mainApp.Invoke(showError); } else { showError(); }
-            }
-
-            // Sanity Check: If reset/autoplay seems needed, but playback is already active again,
-            // skip to prevent race conditions (should be less likely now, but keep for safety).
-            if ((resetUi || playNext) && isPlaying)
-            {
-                 Debug.WriteLine("OnPlaybackStopped: Action needed but isPlaying is true. Race condition averted. Skipping UI reset/autoplay.");
-                 resetUi = false;
-                 playNext = false;
             }
 
             // Reset UI if needed
             if (resetUi)
             {
-                 Debug.WriteLine($"OnPlaybackStopped: Resetting UI due to {reason}.");
-                 Action resetAction = ResetPlaybackUI;
-                 if (mainApp != null && mainApp.InvokeRequired) { mainApp.Invoke(resetAction); }
-                 else if (mainApp != null) { resetAction(); }
+                Debug.WriteLine($"OnPlaybackStopped: Resetting UI due to {reason}.");
+                Action resetAction = ResetPlaybackUI;
+                if (mainApp != null && mainApp.InvokeRequired) { mainApp.Invoke(resetAction); }
+                else if (mainApp != null) { resetAction(); }
             }
             else
             {
-                 Debug.WriteLine($"OnPlaybackStopped: Skipping UI reset (Reason: {reason}, IsPlaying: {isPlaying}).");
+                Debug.WriteLine($"OnPlaybackStopped: Skipping UI reset (Reason: {reason}, IsPlaying: {isPlaying}).");
             }
 
             // Trigger Autoplay if needed
@@ -1223,16 +1261,16 @@ namespace Vibely_App.View
                 {
                     try
                     {
-                         var songControl = new SongControl(song);
-                         songControl.Width = songsFlowPanel.ClientSize.Width - songControl.Margin.Horizontal; // Initial width
-                         songControl.Margin = new Padding(0, 0, 0, 10);
-                         songControl.Cursor = Cursors.Hand;
+                        var songControl = new SongControl(song);
+                        songControl.Width = songsFlowPanel.ClientSize.Width - songControl.Margin.Horizontal; // Initial width
+                        songControl.Margin = new Padding(0, 0, 0, 10);
+                        songControl.Cursor = Cursors.Hand;
 
-                         songControl.Click += SongControl_Click;
-                         songControl.OnDelete += SongControl_OnDelete;
-                         songControl.OnAddToPlaylist += SongControl_OnAddToPlaylist;
+                        songControl.Click += SongControl_Click;
+                        songControl.OnDelete += SongControl_OnDelete;
+                        songControl.OnAddToPlaylist += SongControl_OnAddToPlaylist;
 
-                         songsFlowPanel.Controls.Add(songControl);
+                        songsFlowPanel.Controls.Add(songControl);
                     }
                     catch (Exception ex)
                     {
@@ -1248,8 +1286,8 @@ namespace Vibely_App.View
             songsFlowPanel.ResumeLayout(true);
             // Force layout update if needed
             // songsFlowPanel.PerformLayout();
-             // Scroll to top after updating
-             songsFlowPanel.ScrollControlIntoView(songsFlowPanel.Controls.Count > 0 ? songsFlowPanel.Controls[0] : songsFlowPanel);
+            // Scroll to top after updating
+            songsFlowPanel.ScrollControlIntoView(songsFlowPanel.Controls.Count > 0 ? songsFlowPanel.Controls[0] : songsFlowPanel);
         }
         // ------------------------------------
 
@@ -1270,7 +1308,7 @@ namespace Vibely_App.View
             }
 
             // Clear search box when changing playlists
-            if(mainApp != null) mainApp.TxtSearch.Text = "";
+            if (mainApp != null) mainApp.TxtSearch.Text = "";
 
             DisplaySongs(songsToDisplay);
         }
@@ -1278,14 +1316,14 @@ namespace Vibely_App.View
         // Handler for resizing song controls within the flow panel
         private void SongFlowPanel_SizeChanged(object sender, EventArgs e)
         {
-             if(sender is FlowLayoutPanel panel)
-             {
-                  foreach(SongControl sc in panel.Controls.OfType<SongControl>())
-                  {
-                     try { sc.Width = panel.ClientSize.Width - sc.Margin.Horizontal; }
-                     catch { /* Ignore potential errors during resize storms */ }
-                  }
-             }
+            if (sender is FlowLayoutPanel panel)
+            {
+                foreach (SongControl sc in panel.Controls.OfType<SongControl>())
+                {
+                    try { sc.Width = panel.ClientSize.Width - sc.Margin.Horizontal; }
+                    catch { /* Ignore potential errors during resize storms */ }
+                }
+            }
         }
 
         // --- New handler for playing song on click ---
@@ -1323,24 +1361,39 @@ namespace Vibely_App.View
 
         private void PlayAdjacentSong(int direction) // direction: 1 for next, -1 for previous
         {
-            lock (playbackLock)
+            Song nextSong = null;
+
+            lock (playbackLock) // Lock *only* to safely find the next song based on current state
             {
-                if (currentSongList == null || currentSongList.Count == 0 || currentPlayingSong == null)
+                if (currentSongList == null || currentSongList.Count == 0)
                 {
-                    Debug.WriteLine("Cannot play next/prev: No song list or current song.");
+                    Debug.WriteLine("Cannot play next/prev: No song list available.");
                     return;
                 }
 
-                int currentIndex = currentSongList.FindIndex(s => s.Id == currentPlayingSong.Id);
-                if (currentIndex == -1)
-        {
-                    Debug.WriteLine("Cannot play next/prev: Current song not found in list.");
-                    return; // Current song isn't in the list for some reason
+                int currentIndex = -1;
+                if (currentPlayingSong != null)
+                {
+                    currentIndex = currentSongList.FindIndex(s => s.Id == currentPlayingSong.Id);
                 }
+
+
+                if (currentIndex == -1 && currentSongList.Count > 0)
+                {
+                    // If no song is playing or current song not found, play the first/last depending on direction
+                    currentIndex = (direction > 0) ? -1 : 0; // Setup for next index calculation
+                    Debug.WriteLine("No current song or not found, starting from beginning/end.");
+                }
+                else if (currentIndex == -1) // List is empty or current song check failed somehow
+                {
+                    Debug.WriteLine("Cannot play next/prev: Current song not found and list is empty.");
+                    return;
+                }
+
 
                 int nextIndex = currentIndex + direction;
 
-                // Handle wrap-around
+                // Handle wrap-around or edge cases
                 if (nextIndex < 0)
                 {
                     nextIndex = currentSongList.Count - 1; // Wrap to last song
@@ -1352,59 +1405,87 @@ namespace Vibely_App.View
 
                 if (nextIndex >= 0 && nextIndex < currentSongList.Count)
                 {
-                     Song nextSong = currentSongList[nextIndex];
-                     Debug.WriteLine($"Playing {(direction > 0 ? "next" : "previous")} song: {nextSong.Title}");
-
-                     isSkippingTrack = true; // Set flag BEFORE calling PlaySong
-                     try
-                     {
-                         PlaySong(nextSong);
-                     }
-                     finally
-                     {
-                         // Ensure flag is reset even if PlaySong throws an error
-                         // although PlaySong should handle its own cleanup
-                         isSkippingTrack = false;
-                     }
+                    nextSong = currentSongList[nextIndex];
+                    Debug.WriteLine($"Selected {(direction > 0 ? "next" : "previous")} song: {nextSong.Title} at index {nextIndex}");
                 }
-                 else { /* ... error handling ... */ }
+                else
+                {
+                    Debug.WriteLine($"Cannot play next/prev: Calculated invalid index {nextIndex}. List count: {currentSongList.Count}");
+                    return; // Should not happen with wrap-around logic, but safety check
+                }
+
+                // Set the flag indicating a skip is happening BEFORE releasing the lock
+                // This helps OnPlaybackStopped understand why playback might stop suddenly.
+                isSkippingTrack = true;
+
+            } // --- End Lock for finding song ---
+
+            // --- Play the found song (Outside Lock) ---
+            if (nextSong != null)
+            {
+                Debug.WriteLine($"Attempting to play {(direction > 0 ? "next" : "previous")} song: {nextSong.Title}");
+                try
+                {
+                    PlaySong(nextSong); // PlaySong handles its own locking internally now
+                }
+                finally
+                {
+                    // We reset the flag *after* the PlaySong call returns.
+                    // It's primarily for the OnPlaybackStopped event triggered by the *previous*
+                    // song's StopPlaybackInternally call inside the *new* PlaySong.
+                    lock (playbackLock) // Briefly re-acquire lock to safely reset the flag
+                    {
+                        isSkippingTrack = false;
+                    }
+                    Debug.WriteLine($"Finished processing skip request. isSkippingTrack reset.");
+                }
+            }
+            else
+            {
+                // If we somehow exited the lock without finding a song, reset the flag too.
+                lock (playbackLock)
+                {
+                    isSkippingTrack = false;
+                }
+                Debug.WriteLine($"Skip request completed but no next song was played.");
             }
         }
 
         // --- IDisposable Implementation ---
         protected virtual void Dispose(bool disposing)
         {
-             lock (playbackLock) // Ensure disposal is synchronized
-             {
-                 if (!disposedValue)
-                 {
-                     if (disposing)
-                     {
-                         StopPlaybackInternally(); // Clean up streams/reader within lock
-                         if (waveOut != null)
-                         {
-                             waveOut.PlaybackStopped -= OnPlaybackStopped;
-                             waveOut.Dispose();
-                             waveOut = null;
-                         }
-                         if (playbackTimer != null)
-                         { // Timer disposal is safe outside lock if needed, but fine here
-                             playbackTimer.Dispose();
-                             playbackTimer = null;
-                         }
+            lock (playbackLock) // Ensure disposal is synchronized
+            {
+                if (!disposedValue)
+                {
+                    if (disposing)
+                    {
+                        isIntentionalStop = true; // Set flag BEFORE stopping
+                        StopPlaybackInternally(); // Clean up streams/reader within lock - REMOVED parameter
+                        if (waveOut != null)
+                        {
+                            waveOut.PlaybackStopped -= OnPlaybackStopped;
+                            waveOut.Dispose();
+                            waveOut = null;
+                        }
+                        if (playbackTimer != null)
+                        { // Timer disposal is safe outside lock if needed, but fine here
+                            playbackTimer.Dispose();
+                            playbackTimer = null;
+                        }
 
-                         // Dispose search timer
-                         if (searchDebounceTimer != null)
-                         {
-                             searchDebounceTimer.Stop(); // Ensure stopped
-                             searchDebounceTimer.Tick -= SearchDebounceTimer_Tick;
-                             searchDebounceTimer.Dispose();
-                             searchDebounceTimer = null;
-                         }
-                     }
-                     disposedValue = true;
-                 }
-             }
+                        // Dispose search timer
+                        if (searchDebounceTimer != null)
+                        {
+                            searchDebounceTimer.Stop(); // Ensure stopped
+                            searchDebounceTimer.Tick -= SearchDebounceTimer_Tick;
+                            searchDebounceTimer.Dispose();
+                            searchDebounceTimer = null;
+                        }
+                    }
+                    disposedValue = true;
+                }
+            }
         }
 
         // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
