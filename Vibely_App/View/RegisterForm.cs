@@ -61,8 +61,7 @@ namespace Vibely_App.View
                 string.IsNullOrWhiteSpace(txtRegisterUsername.Text) ||
                 string.IsNullOrWhiteSpace(txtRegisterPassword.Text) ||
                 string.IsNullOrWhiteSpace(txtRegisterPhoneNumber.Text) ||
-                string.IsNullOrWhiteSpace(txtRegisterEmail.Text) ||
-                pctrUser.Image == null)
+                string.IsNullOrWhiteSpace(txtRegisterEmail.Text))
             {
                 MessageBox.Show("Please fill in all fields.");
                 ClearFields();
@@ -90,11 +89,19 @@ namespace Vibely_App.View
             string phoneNumber = txtRegisterPhoneNumber.Text;
             string email = txtRegisterEmail.Text;
             byte[] profilePicture;
-            
-            using (var ms = new MemoryStream())
+
+            if (pctrUser.Image == null)
             {
-                pctrUser.Image.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-                profilePicture = ms.ToArray();
+                profilePicture = null;
+            }
+
+            else
+            {
+                using (var ms = new MemoryStream())
+                {
+                    pctrUser.Image.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                    profilePicture = ms.ToArray();
+                }
             }
 
             if (UserBusiness.IsUsernameTaken(username))
