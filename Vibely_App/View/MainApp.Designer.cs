@@ -1,5 +1,6 @@
 ﻿using Guna.UI2.WinForms;
 using System.Windows.Forms;
+using Vibely_App.Properties;
 
 namespace Vibely_App.View
 {
@@ -54,6 +55,7 @@ namespace Vibely_App.View
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges21 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges22 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges23 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainApp));
             sidePanel = new Guna2Panel();
             profilePanel = new Guna2Panel();
             pctrUser = new Guna2CirclePictureBox();
@@ -109,7 +111,7 @@ namespace Vibely_App.View
             lblUserName.BackColor = Color.Transparent;
             lblUserName.Location = new Point(0, 0);
             lblUserName.Name = "lblUserName";
-            lblUserName.Size = new Size(0, 0);
+            lblUserName.Size = new Size(3, 2);
             lblUserName.TabIndex = 0;
             lblUserName.Text = null;
             // 
@@ -232,7 +234,7 @@ namespace Vibely_App.View
             lblCurrentTime.BackColor = Color.Transparent;
             lblCurrentTime.Location = new Point(0, 0);
             lblCurrentTime.Name = "lblCurrentTime";
-            lblCurrentTime.Size = new Size(0, 0);
+            lblCurrentTime.Size = new Size(3, 2);
             lblCurrentTime.TabIndex = 0;
             lblCurrentTime.Text = null;
             // 
@@ -241,7 +243,7 @@ namespace Vibely_App.View
             lblTotalTime.BackColor = Color.Transparent;
             lblTotalTime.Location = new Point(0, 0);
             lblTotalTime.Name = "lblTotalTime";
-            lblTotalTime.Size = new Size(0, 0);
+            lblTotalTime.Size = new Size(3, 2);
             lblTotalTime.TabIndex = 0;
             lblTotalTime.Text = null;
             // 
@@ -250,7 +252,7 @@ namespace Vibely_App.View
             lblCurrentSong.BackColor = Color.Transparent;
             lblCurrentSong.Location = new Point(0, 0);
             lblCurrentSong.Name = "lblCurrentSong";
-            lblCurrentSong.Size = new Size(0, 0);
+            lblCurrentSong.Size = new Size(3, 2);
             lblCurrentSong.TabIndex = 0;
             lblCurrentSong.Text = null;
             // 
@@ -259,7 +261,7 @@ namespace Vibely_App.View
             lblCurrentArtist.BackColor = Color.Transparent;
             lblCurrentArtist.Location = new Point(0, 0);
             lblCurrentArtist.Name = "lblCurrentArtist";
-            lblCurrentArtist.Size = new Size(0, 0);
+            lblCurrentArtist.Size = new Size(3, 2);
             lblCurrentArtist.TabIndex = 0;
             lblCurrentArtist.Text = null;
             // 
@@ -272,6 +274,7 @@ namespace Vibely_App.View
             Controls.Add(sidePanel);
             Controls.Add(playerPanel);
             Font = new Font("Arial Rounded MT Bold", 11.25F);
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Margin = new Padding(4, 3, 4, 3);
             MinimumSize = new Size(1080, 720);
             Name = "MainApp";
