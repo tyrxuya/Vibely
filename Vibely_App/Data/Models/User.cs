@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -48,9 +49,8 @@ namespace Vibely_App.Data.Models
         [Column("phone_number")]
         public string PhoneNumber { get; set; }
 
-        [Required]
         [Column("profile_picture")]
-        public byte[] ProfilePicture { get; set; }
+        public byte[]? ProfilePicture { get; set; }
 
         [Required]
         [Column("is_premium")]
