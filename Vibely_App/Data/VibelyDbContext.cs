@@ -14,7 +14,14 @@ namespace Vibely_App.Data
         public VibelyDbContext()
         {
             Database.EnsureCreated();
+            if (this.Genres.ToList().Count == 0)
+            {
+                this.Genres.Add(new Genre { Name = "Unknown genre" });
+                this.SaveChanges();
+            }
         }
+
+        public VibelyDbContext(DbContextOptions options) : base(options) {}
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

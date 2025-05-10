@@ -17,7 +17,7 @@ namespace Vibely_App.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.3")
+                .HasAnnotation("ProductVersion", "9.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -101,6 +101,12 @@ namespace Vibely_App.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Artist")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("artist");
+
                     b.Property<byte[]>("Data")
                         .IsRequired()
                         .HasColumnType("bytea")
@@ -180,7 +186,6 @@ namespace Vibely_App.Migrations
                         .HasColumnName("phone_number");
 
                     b.Property<byte[]>("ProfilePicture")
-                        .IsRequired()
                         .HasColumnType("bytea")
                         .HasColumnName("profile_picture");
 
